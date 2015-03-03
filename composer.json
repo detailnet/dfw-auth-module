@@ -31,7 +31,11 @@
         "phpunit/phpunit": "~4.4.5",
         "squizlabs/php_codesniffer" : "~2.2.0",
         "phpmd/phpmd": "~2.1.3",
-        "satooshi/php-coveralls": "dev-master"
+        "satooshi/php-coveralls": "dev-master",
+        "zf-commons/zfc-rbac": "~2.4"
+    },
+    "suggest": {
+        "zf-commons/zfc-rbac": "For usage of ZfcRbac based authorization"
     },
     "autoload": {
         "psr-0": {

@@ -14,8 +14,8 @@ class ModuleOptionsTest extends OptionsTestCase
         $this->options = $this->getOptions(
             'Detail\Auth\Options\ModuleOptions',
             array(
-//                'getNormalization',
-//                'setNormalization',
+                'getAuthorization',
+                'setAuthorization',
             )
         );
     }
@@ -25,14 +25,14 @@ class ModuleOptionsTest extends OptionsTestCase
         $this->assertInstanceOf('Detail\Auth\Options\ModuleOptions', $this->options);
     }
 
-//    public function testNormalizationCanBeSet()
-//    {
-//        $this->assertNull($this->options->getNormalization());
-//
-//        $this->options->setNormalization(array());
-//
-//        $normalization = $this->options->getNormalization();
-//
-//        $this->assertInstanceOf('Detail\Auth\Options\Normalization\NormalizationOptions', $normalization);
-//    }
+    public function testAuthorizationCanBeSet()
+    {
+        $this->assertNull($this->options->getAuthorization());
+
+        $this->options->setAuthorization(array());
+
+        $authorization = $this->options->getAuthorization();
+
+        $this->assertInstanceOf('Detail\Auth\Options\Authorization\AuthorizationOptions', $authorization);
+    }
 }

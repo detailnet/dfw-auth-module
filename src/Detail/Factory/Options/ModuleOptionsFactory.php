@@ -8,7 +8,8 @@ use Zend\ServiceManager\ServiceLocatorInterface;
 use Detail\Auth\Exception\ConfigException;
 use Detail\Auth\Options\ModuleOptions;
 
-class ModuleOptionsFactory implements FactoryInterface
+class ModuleOptionsFactory implements
+    FactoryInterface
 {
     /**
      * {@inheritDoc}
