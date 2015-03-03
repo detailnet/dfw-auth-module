@@ -1,0 +1,62 @@
+{
+    "name": "detailnet/dfw-auth-module",
+    "description": "Zend Framework 2 Module for authentication and authorization",
+    "type": "library",
+    "keywords": [
+        "dfw",
+        "detailnet",
+        "authentication",
+        "authorization",
+        "module",
+        "zf2"
+    ],
+    "homepage": "https://github.com/detailnet/dfw-auth-module/",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ivan Wolf",
+            "email": "ivan.wolf@detailnet.ch"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0",
+        "zendframework/zend-loader": "2.*",
+        "zendframework/zend-modulemanager": "2.*",
+        "zendframework/zend-mvc": "2.*",
+        "zendframework/zend-servicemanager": "2.*",
+        "zendframework/zend-stdlib": "2.*",
+        "detailnet/dfw-core": "~0.1.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4.4.5",
+        "squizlabs/php_codesniffer" : "~2.2.0",
+        "phpmd/phpmd": "~2.1.3",
+        "satooshi/php-coveralls": "dev-master"
+    },
+    "autoload": {
+        "psr-0": {
+            "Detail\\Auth\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-0": {
+            "DetailTest\\Auth\\": "tests/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.x-dev"
+        }
+    },
+    "archive": {
+        "exclude": [
+            "!vendor",
+            "tests",
+            "*phpunit.xml",
+            ".travis.yml",
+            "build.xml",
+            "build.properties",
+            "composer.phar"
+        ]
+    }
+}
