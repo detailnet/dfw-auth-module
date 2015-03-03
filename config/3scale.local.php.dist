@@ -1,0 +1,8 @@
+<?php
+
+return array(
+    '3scale' => array(
+        'provider_key' => 'your-provider-key',
+        'service_id'   => 'your-service-id',
+    ),
+);

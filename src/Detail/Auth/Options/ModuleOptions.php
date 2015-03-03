@@ -12,6 +12,11 @@ class ModuleOptions extends AbstractOptions
     protected $authorization;
 
     /**
+     * @var array
+     */
+    protected $identity;
+
+    /**
      * @return Authorization\AuthorizationOptions
      */
     public function getAuthorization()
@@ -25,5 +30,21 @@ class ModuleOptions extends AbstractOptions
     public function setAuthorization(array $authorization)
     {
         $this->authorization = new Authorization\AuthorizationOptions($authorization);
+    }
+
+    /**
+     * @return Identity\IdentityOptions
+     */
+    public function getIdentity()
+    {
+        return $this->identity;
+    }
+
+    /**
+     * @param array $identity
+     */
+    public function setIdentity(array $identity)
+    {
+        $this->identity = new Identity\IdentityOptions($identity);
     }
 }

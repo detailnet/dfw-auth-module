@@ -20,13 +20,16 @@
     ],
     "require": {
         "php": ">=5.4.0",
+        "zendframework/zend-console": "2.*",
         "zendframework/zend-loader": "2.*",
         "zendframework/zend-http": "2.*",
         "zendframework/zend-modulemanager": "2.*",
         "zendframework/zend-mvc": "2.*",
         "zendframework/zend-servicemanager": "2.*",
         "zendframework/zend-stdlib": "2.*",
-        "detailnet/dfw-core": "~0.1.1"
+        "detailnet/dfw-core": "~0.1.1",
+        "detailnet/dfw-log": "~0.2.0",
+        "detailnet/dfw-log-module": "~0.2.0"
     },
     "require-dev": {
         "phpunit/phpunit": "~4.4.5",
@@ -34,12 +37,14 @@
         "phpmd/phpmd": "~2.1.3",
         "satooshi/php-coveralls": "dev-master",
         "zf-commons/zfc-rbac": "~2.4",
-        "zfcampus/zf-mvc-auth": "~1.0-dev"
+        "zfcampus/zf-mvc-auth": "~1.0-dev",
+        "3scale/3scale_ws_api_for_php": "~2.6.2"
     },
     "suggest": {
         "zf-commons/zfc-rbac": "For usage of ZfcRbac based authorization",
         "zfcampus/zf-mvc-auth": "For usage of ZfcRbac based REST guard",
-        "zendframework/zend-http": "For usage of ZfcRbac based REST guard"
+        "zendframework/zend-http": "For usage of ZfcRbac based REST guard",
+        "3scale/3scale_ws_api_for_php": "For usage of the 3scale identity provider adapter"
     },
     "autoload": {
         "psr-0": {
