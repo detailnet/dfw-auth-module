@@ -24,6 +24,7 @@ class Module implements
     public function onBootstrap(MvcEvent $event)
     {
         $this->bootstrapAuth($event);
+        $this->bootstrapNavigation($event);
     }
 
     public function bootstrapAuth(MvcEvent $event)
@@ -57,6 +58,28 @@ class Module implements
         $identityProvider->getEventManager()->attach(
             IdentityProviderEvent::EVENT_PRE_AUTHENTICATE,
             $injectRequest
+        );
+    }
+
+    public function bootstrapNavigation(MvcEvent $event)
+    {
+        /** @var \Zend\ServiceManager\ServiceManager $serviceManager */
+        $serviceManager = $event->getApplication()->getServiceManager();
+
+        /** @var \Detail\Auth\Authorization\View\Listener\NavigationListener $authorizationListener */
+        $authorizationListener = $serviceManager->get(
+            'Detail\Auth\Authorization\View\Listener\NavigationListener'
+        );
+
+        // The AbstractHelper attaches it's own AclListener (which is useless for us).
+        // But since we can't disable the AclListener (AbstractHelper wouldn't trigger the "isAllowed" event),
+        // we need to register our own listener with lower priority (only the last listener's result
+        // is used to decide if allowed or not).
+        $event->getApplication()->getEventManager()->getSharedManager()->attach(
+            'Zend\View\Helper\Navigation\AbstractHelper',
+            'isAllowed',
+            array($authorizationListener, 'accept'),
+            -100 // AclListeners is 1 (so we're lower)
         );
     }
 
