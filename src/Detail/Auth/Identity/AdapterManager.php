@@ -14,13 +14,6 @@ use Detail\Auth\Exception;
 class AdapterManager extends AbstractPluginManager
 {
     /**
-     * Whether or not to share by default
-     *
-     * @var bool
-     */
-    protected $shareByDefault = false;
-
-    /**
      * {@inheritDoc}
      */
     public function has($name, $checkAbstractFactories = true, $usePeeringServiceManagers = true)
@@ -38,6 +31,7 @@ class AdapterManager extends AbstractPluginManager
 
     /**
      * {@inheritDoc}
+     * @return Adapter\AdapterInterface
      */
     public function get($name, $options = array(), $usePeeringServiceManagers = true)
     {
@@ -46,6 +40,7 @@ class AdapterManager extends AbstractPluginManager
 
     /**
      * {@inheritDoc}
+     * @return Adapter\AdapterInterface
      */
     public function getAdapter($type, $options = array())
     {

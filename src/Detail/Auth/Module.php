@@ -12,6 +12,7 @@ use Zend\ModuleManager\Feature\ControllerProviderInterface;
 use Zend\ModuleManager\Feature\ServiceProviderInterface;
 use Zend\Mvc\MvcEvent;
 
+use Detail\Auth\Identity\Adapter\ChainedAdapter;
 use Detail\Auth\Identity\Adapter\ThreeScaleAdapter;
 use Detail\Auth\Identity\IdentityProviderEvent;
 
@@ -45,6 +46,10 @@ class Module implements
 
         $injectRequest = function(IdentityProviderEvent $authEvent) use ($request) {
             $adapter = $authEvent->getParam(IdentityProviderEvent::PARAM_ADAPTER);
+
+            if ($adapter instanceof ChainedAdapter) {
+                $adapter = $adapter->getAdapter('3scale');
+            }
 
             /** @todo Use interface in adapters that need HttpRequest */
 //            if ($adapter instanceof HttpRequestAwareAdapterInterface

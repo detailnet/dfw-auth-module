@@ -50,11 +50,20 @@ return array(
             'default_adapter' => 'test',
             'adapter_factories' => array(
                 '3scale' => 'Detail\Auth\Factory\Identity\Adapter\ThreeScaleAdapterFactory',
+                'authentication' => 'Detail\Auth\Factory\Identity\Adapter\AuthenticationAdapterFactory',
+                'chained' => 'Detail\Auth\Factory\Identity\Adapter\ChainedAdapterFactory',
                 'test' => 'Detail\Auth\Factory\Identity\Adapter\TestAdapterFactory',
             ),
             'adapters' => array(
                 '3scale' => array(
                     'client' => 'ThreeScaleClient',
+                ),
+                'authentication' => array(
+                    'service' => 'Zend\Authentication\AuthenticationService',
+                ),
+                'chained' => array(
+                    'adapters' => array(
+                    ),
                 ),
                 'test' => array(
                     'result' => true,

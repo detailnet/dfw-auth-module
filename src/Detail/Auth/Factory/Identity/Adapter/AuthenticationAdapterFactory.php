@@ -7,9 +7,9 @@ use Zend\ServiceManager\ServiceLocatorInterface;
 use Zend\ServiceManager\ServiceLocatorAwareInterface;
 
 use Detail\Auth\Exception\ConfigException;
-use Detail\Auth\Identity\Adapter\ThreeScaleAdapter as Adapter;
+use Detail\Auth\Identity\Adapter\AuthenticationAdapter as Adapter;
 
-class ThreeScaleAdapterFactory implements FactoryInterface
+class AuthenticationAdapterFactory implements FactoryInterface
 {
     /**
      * {@inheritDoc}
@@ -25,25 +25,22 @@ class ThreeScaleAdapterFactory implements FactoryInterface
         $moduleOptions = $serviceLocator->get('Detail\Auth\Options\ModuleOptions');
         $identityOptions = $moduleOptions->getIdentity();
 
-        /** @var \Detail\Auth\Options\Identity\Adapter\ThreeScaleAdapterOptions $adapterOptions */
+        /** @var \Detail\Auth\Options\Identity\Adapter\AuthenticationAdapterOptions $adapterOptions */
         $adapterOptions = $identityOptions->getAdapterOptions(
-            '3scale',
-            'Detail\Auth\Options\Identity\Adapter\ThreeScaleAdapterOptions'
+            'authentication',
+            'Detail\Auth\Options\Identity\Adapter\AuthenticationAdapterOptions'
         );
 
-        /** @var \Detail\Auth\Options\ThreeScaleOptions $threeScaleOptions */
-        $threeScaleOptions = $serviceLocator->get('Detail\Auth\Options\ThreeScaleOptions');
+        $authenticationServiceClass = $adapterOptions->getService();
 
-        $clientClass = $adapterOptions->getClient();
-
-        if (!$clientClass) {
-            throw new ConfigException('Missing 3scale client class');
+        if (!$authenticationServiceClass) {
+            throw new ConfigException('Missing authentication service class');
         }
 
-        /** @var \ThreeScaleClient $client */
-        $client = $serviceLocator->get($clientClass);
+        /** @var \Zend\Authentication\AuthenticationService $authenticationService */
+        $authenticationService = $serviceLocator->get($authenticationServiceClass);
 
-        $adapter = new Adapter($client, $threeScaleOptions->getServiceId());
+        $adapter = new Adapter($authenticationService);
 
         return $adapter;
     }

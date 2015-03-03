@@ -7,9 +7,9 @@ use Zend\ServiceManager\ServiceLocatorInterface;
 use Zend\ServiceManager\ServiceLocatorAwareInterface;
 
 use Detail\Auth\Exception\ConfigException;
-use Detail\Auth\Identity\Adapter\ThreeScaleAdapter as Adapter;
+use Detail\Auth\Identity\Adapter\ChainedAdapter as Adapter;
 
-class ThreeScaleAdapterFactory implements FactoryInterface
+class ChainedAdapterFactory implements FactoryInterface
 {
     /**
      * {@inheritDoc}
@@ -25,25 +25,21 @@ class ThreeScaleAdapterFactory implements FactoryInterface
         $moduleOptions = $serviceLocator->get('Detail\Auth\Options\ModuleOptions');
         $identityOptions = $moduleOptions->getIdentity();
 
-        /** @var \Detail\Auth\Options\Identity\Adapter\ThreeScaleAdapterOptions $adapterOptions */
+        /** @var \Detail\Auth\Options\Identity\Adapter\ChainedAdapterOptions $adapterOptions */
         $adapterOptions = $identityOptions->getAdapterOptions(
-            '3scale',
-            'Detail\Auth\Options\Identity\Adapter\ThreeScaleAdapterOptions'
+            'chained',
+            'Detail\Auth\Options\Identity\Adapter\ChainedAdapterOptions'
         );
 
-        /** @var \Detail\Auth\Options\ThreeScaleOptions $threeScaleOptions */
-        $threeScaleOptions = $serviceLocator->get('Detail\Auth\Options\ThreeScaleOptions');
+        /** @var \Detail\Auth\Identity\AdapterManager $adapters */
+        $adapters = $serviceLocator->get('Detail\Auth\Identity\AdapterManager');
+        $chainedAdapters = $adapterOptions->getAdapters();
 
-        $clientClass = $adapterOptions->getClient();
-
-        if (!$clientClass) {
-            throw new ConfigException('Missing 3scale client class');
+        if (count($chainedAdapters) === 0) {
+            throw new ConfigException('Chained adapter required at least one adapter');
         }
 
-        /** @var \ThreeScaleClient $client */
-        $client = $serviceLocator->get($clientClass);
-
-        $adapter = new Adapter($client, $threeScaleOptions->getServiceId());
+        $adapter = new Adapter($adapters, $chainedAdapters);
 
         return $adapter;
     }
