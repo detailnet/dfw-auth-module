@@ -83,7 +83,7 @@ class RestGuard extends BaseGuard
         $routeMatch = $event->getRouteMatch();
         $request = $event->getRequest();
 
-        if (!$request instanceof HttpRequest){
+        if (!$request instanceof HttpRequest) {
             return true;
         }
 
