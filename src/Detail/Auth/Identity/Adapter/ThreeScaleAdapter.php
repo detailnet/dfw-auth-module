@@ -2,6 +2,7 @@
 
 namespace Detail\Auth\Identity\Adapter;
 
+use Detail\Auth\Identity\ResultInterface;
 use ThreeScaleAuthorizeResponse;
 use ThreeScaleClient;
 use ThreeScaleServerError;
@@ -103,35 +104,10 @@ class ThreeScaleAdapter implements
      */
     public function authenticate()
     {
-        $request = $this->getRequest();
+        $credentials = $this->getCredentials();
 
-        if ($request === null) {
-            throw new Exception\RuntimeException(
-                sprintf('Request object must be set before calling %s()', __METHOD__)
-            );
-        }
-
-        $appId  = $request->getHeader(self::HEADER_APPLICATION_ID);
-        $appKey = $request->getHeader(self::HEADER_APPLICATION_KEY);
-
-        $messages = array();
-
-        if (!$appId) {
-            $messages[] = sprintf(
-                'Missing application identifier; provide one using the "%s" header',
-                self::HEADER_APPLICATION_ID
-            );
-        }
-
-        if (!$appKey) {
-            $messages[] = sprintf(
-                'Missing application key; provide one using the "%s" header',
-                self::HEADER_APPLICATION_KEY
-            );
-        }
-
-        if (count($messages) > 0) {
-            return new Result(false, null, $messages);
+        if ($credentials instanceof ResultInterface) {
+            return $credentials;
         }
 
         $usage = array('hits' => 1);
@@ -139,8 +115,8 @@ class ThreeScaleAdapter implements
 
         try {
             $response = @$client->authorize(
-                $appId->getFieldValue(),
-                $appKey->getFieldValue(),
+                $credentials['id'],
+                $credentials['key'],
                 $this->getServiceId(),
                 $usage
             );
@@ -163,8 +139,6 @@ class ThreeScaleAdapter implements
                 $e
             );
         }
-
-
 
         /** @todo Use MvcEvent listener to log calls in background (using an IronMQ queue) */
 
@@ -202,5 +176,47 @@ class ThreeScaleAdapter implements
     public function setUsePlanAsRole($usePlanAsRole)
     {
         $this->usePlanAsRole = $usePlanAsRole;
+    }
+
+    /**
+     * @return array|Result
+     */
+    protected function getCredentials()
+    {
+        $request = $this->getRequest();
+
+        if ($request === null) {
+            throw new Exception\RuntimeException(
+                sprintf('Request object must be set before calling %s()', __METHOD__)
+            );
+        }
+
+        $appId  = $request->getHeader(self::HEADER_APPLICATION_ID);
+        $appKey = $request->getHeader(self::HEADER_APPLICATION_KEY);
+
+        $messages = array();
+
+        if (!$appId) {
+            $messages[] = sprintf(
+                'Missing application identifier; provide one using the "%s" header',
+                self::HEADER_APPLICATION_ID
+            );
+        }
+
+        if (!$appKey) {
+            $messages[] = sprintf(
+                'Missing application key; provide one using the "%s" header',
+                self::HEADER_APPLICATION_KEY
+            );
+        }
+
+        if (count($messages) > 0) {
+            return new Result(false, null, $messages);
+        }
+
+        return array(
+            'id'  => $appId->getFieldValue(),
+            'key' => $appKey->getFieldValue(),
+        );
     }
 }
