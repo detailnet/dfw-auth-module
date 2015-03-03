@@ -22,6 +22,13 @@ return array(
         'initializers' => array(
         ),
     ),
+    'zfc_rbac' => array(
+        'guard_manager' => array(
+            'factories' => array(
+                'Detail\Auth\Authorization\ZfcRbac\Guard\RestGuard' => 'Detail\Auth\Factory\Authorization\ZfcRbac\Guard\RestGuardFactory',
+            ),
+        ),
+    ),
     'detail_auth' => array(
         'authorization' => array(
             'adapter' => 'Detail\Auth\Authorization\Adapter\ZfcRbacAdapter',
