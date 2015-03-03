@@ -11,17 +11,24 @@ class Result implements
     protected $valid;
 
     /**
+     * @var IdentityInterface
+     */
+    protected $identity;
+
+    /**
      * @var array
      */
     protected $messages;
 
     /**
      * @param boolean $valid
+     * @param IdentityInterface $identity
      * @param array $messages
      */
-    public function __construct($valid, array $messages = array())
+    public function __construct($valid, IdentityInterface $identity = null, array $messages = array())
     {
         $this->valid = (bool) $valid;
+        $this->identity = $identity;
         $this->messages = $messages;
     }
 
@@ -31,6 +38,14 @@ class Result implements
     public function isValid()
     {
         return $this->valid;
+    }
+
+    /**
+     * @return IdentityInterface
+     */
+    public function getIdentity()
+    {
+        return $this->identity;
     }
 
     /**

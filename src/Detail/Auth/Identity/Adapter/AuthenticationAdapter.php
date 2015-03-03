@@ -5,7 +5,6 @@ namespace Detail\Auth\Identity\Adapter;
 use Zend\Authentication\AuthenticationService;
 
 use Detail\Auth\Identity\Result;
-use Detail\Auth\Identity\ResultInterface;
 
 class AuthenticationAdapter implements
     AdapterInterface
@@ -40,11 +39,20 @@ class AuthenticationAdapter implements
     }
 
     /**
-     * @return ResultInterface
+     * @return Result
      */
     public function authenticate()
     {
-        /** @todo Replace with real implementation */
-        return new Result(false, array('Not yet implemented'));
+        $authenticationService = $this->getAuthenticationService();
+        $valid = true;
+        $identity = $authenticationService->getIdentity();
+        $messages = array();
+
+        if ($identity === null) {
+            $valid = false;
+            $messages = array('User is not authenticated');
+        }
+
+        return new Result($valid, $identity, $messages);
     }
 }

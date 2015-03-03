@@ -10,6 +10,11 @@ interface ResultInterface
     public function isValid();
 
     /**
+     * @return IdentityInterface
+     */
+    public function getIdentity();
+
+    /**
      * @return array
      */
     public function getMessages();

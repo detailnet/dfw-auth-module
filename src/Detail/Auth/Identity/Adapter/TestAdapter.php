@@ -67,6 +67,6 @@ class TestAdapter implements
      */
     public function authenticate()
     {
-        return new Result($this->getResult(), array($this->getErrorMessage()));
+        return new Result($this->getResult(), null, array($this->getErrorMessage()));
     }
 }

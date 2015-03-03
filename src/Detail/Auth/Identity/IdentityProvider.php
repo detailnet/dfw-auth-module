@@ -190,7 +190,7 @@ class IdentityProvider implements
             $this->authenticated = true;
 
             if ($result->isValid()) {
-                $this->identity = new Identity('admin');
+                $this->identity = $result->getIdentity() ?: new Identity('admin');
             }
         } catch (Exception\AuthenticationException $e) {
             $result = new Result(false, array($e->getMessage()));

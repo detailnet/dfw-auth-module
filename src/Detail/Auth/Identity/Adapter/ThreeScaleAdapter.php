@@ -2,12 +2,14 @@
 
 namespace Detail\Auth\Identity\Adapter;
 
+use ThreeScaleAuthorizeResponse;
 use ThreeScaleClient;
 use ThreeScaleServerError;
 
 use Zend\Http\Request as HttpRequest;
 
 use Detail\Auth\Identity\Exception;
+use Detail\Auth\Identity\Identity;
 use Detail\Auth\Identity\Result;
 
 class ThreeScaleAdapter implements
@@ -27,6 +29,11 @@ class ThreeScaleAdapter implements
     protected $serviceId;
 
     /**
+     * @var boolean
+     */
+    protected $usePlanAsRole;
+
+        /**
      * @var HttpRequest
      */
     protected $request;
@@ -34,11 +41,13 @@ class ThreeScaleAdapter implements
     /**
      * @param ThreeScaleClient $client
      * @param string $serviceId
+     * @param boolean $usePlanAsRole
      */
-    public function __construct(ThreeScaleClient $client, $serviceId)
+    public function __construct(ThreeScaleClient $client, $serviceId, $usePlanAsRole = true)
     {
         $this->setClient($client);
         $this->setServiceId($serviceId);
+        $this->setUsePlanAsRole($usePlanAsRole);
     }
 
     /**
@@ -155,15 +164,43 @@ class ThreeScaleAdapter implements
             );
         }
 
+
+
         /** @todo Use MvcEvent listener to log calls in background (using an IronMQ queue) */
 
         $messages = array();
+        $plan = null;
+        $identity = null;
 
         if (!$response->isSuccess()) {
             $messages[(string) $response->getErrorCode()] = $response->getErrorMessage();
         }
 
+        if ($response instanceof ThreeScaleAuthorizeResponse) {
+            $plan = $response->getPlan();
+
+            if ($this->usePlanAsRole()) {
+                $identity = new Identity('3scale-' . $plan);
+            }
+        }
+
         /** @todo Actually authenticate */
-        return new Result($response->isSuccess(), $messages);
+        return new Result($response->isSuccess(), $identity, $messages);
+    }
+
+    /**
+     * @return boolean
+     */
+    public function usePlanAsRole()
+    {
+        return $this->usePlanAsRole;
+    }
+
+    /**
+     * @param boolean $usePlanAsRole
+     */
+    public function setUsePlanAsRole($usePlanAsRole)
+    {
+        $this->usePlanAsRole = $usePlanAsRole;
     }
 }
