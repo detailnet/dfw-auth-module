@@ -14,12 +14,14 @@ return array(
             'Detail\Auth\Options\ModuleOptions' => 'Detail\Auth\Factory\Options\ModuleOptionsFactory',
         ),
         'initializers' => array(
+            'Detail\Auth\Authorization\AuthorizationServiceInitializer',
         ),
         'shared' => array(
         ),
     ),
     'controllers' => array(
         'initializers' => array(
+            'Detail\Auth\Authorization\AuthorizationServiceInitializer',
         ),
     ),
     'zfc_rbac' => array(
