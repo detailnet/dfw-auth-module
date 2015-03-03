@@ -131,7 +131,7 @@ class ThreeScaleAdapter implements
         }
 
         if (count($messages) > 0) {
-            return new Result(false, $messages);
+            return new Result(false, null, $messages);
         }
 
         $usage = array('hits' => 1);

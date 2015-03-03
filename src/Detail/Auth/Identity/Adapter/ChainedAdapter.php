@@ -92,8 +92,6 @@ class ChainedAdapter implements
             }
         }
 
-        return new Result(false, $messages);
+        return new Result(false, null, $messages);
     }
-
-
 }
