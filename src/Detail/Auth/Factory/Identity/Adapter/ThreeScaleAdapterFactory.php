@@ -37,7 +37,12 @@ class ThreeScaleAdapterFactory extends BaseAdapterFactory
         /** @var \ThreeScaleClient $client */
         $client = $serviceLocator->get($clientClass);
 
-        $adapter = new Adapter($client, $threeScaleOptions->getServiceId());
+        $credentialHeaders = array(
+            Adapter::CREDENTIAL_APPLICATION_ID  => $adapterOptions->getAppIdHeader(),
+            Adapter::CREDENTIAL_APPLICATION_KEY => $adapterOptions->getAppKeyHeader(),
+        );
+
+        $adapter = new Adapter($client, $threeScaleOptions->getServiceId(), $credentialHeaders);
 
         return $adapter;
     }

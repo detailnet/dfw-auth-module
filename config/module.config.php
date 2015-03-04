@@ -58,6 +58,8 @@ return array(
             'adapters' => array(
                 'Detail\Auth\Identity\Adapter\ThreeScaleAdapter' => array(
                     'client' => 'ThreeScaleClient',
+                    'app_id_header' => 'DWS-App-ID',
+                    'app_key_header' => 'DWS-App-Key',
                 ),
                 'Detail\Auth\Identity\Adapter\AuthenticationAdapter' => array(
                     'service' => 'Zend\Authentication\AuthenticationService',

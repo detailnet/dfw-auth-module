@@ -18,8 +18,8 @@ class ThreeScaleAdapter extends BaseAdapter implements
 {
     use HttpRequestAwareTrait;
 
-    const HEADER_APPLICATION_ID  = 'DWS-App-ID';
-    const HEADER_APPLICATION_KEY = 'DWS-App-Key';
+    const CREDENTIAL_APPLICATION_ID = 'app_id';
+    const CREDENTIAL_APPLICATION_KEY = 'app_key';
 
     /**
      * @var ThreeScaleClient
@@ -37,14 +37,25 @@ class ThreeScaleAdapter extends BaseAdapter implements
     protected $usePlanAsRole;
 
     /**
+     * @var string[]
+     */
+    protected $credentialHeaders;
+
+    /**
      * @param ThreeScaleClient $client
      * @param string $serviceId
      * @param boolean $usePlanAsRole
+     * @param array $credentialsHeaders
      */
-    public function __construct(ThreeScaleClient $client, $serviceId, $usePlanAsRole = true)
-    {
+    public function __construct(
+        ThreeScaleClient $client,
+        $serviceId,
+        array $credentialsHeaders,
+        $usePlanAsRole = true
+    ) {
         $this->setClient($client);
         $this->setServiceId($serviceId);
+        $this->setCredentialHeaders($credentialsHeaders);
         $this->setUsePlanAsRole($usePlanAsRole);
     }
 
@@ -81,6 +92,63 @@ class ThreeScaleAdapter extends BaseAdapter implements
     }
 
     /**
+     * @return boolean
+     */
+    public function usePlanAsRole()
+    {
+        return $this->usePlanAsRole;
+    }
+
+    /**
+     * @param boolean $usePlanAsRole
+     */
+    public function setUsePlanAsRole($usePlanAsRole)
+    {
+        $this->usePlanAsRole = $usePlanAsRole;
+    }
+
+    /**
+     * @param string $name
+     * @return string
+     */
+    public function getCredentialHeader($name)
+    {
+        return $this->credentialHeaders[$name];
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getCredentialHeaders()
+    {
+        return $this->credentialHeaders;
+    }
+
+    /**
+     * @param string[] $credentialHeaders
+     */
+    public function setCredentialHeaders(array $credentialHeaders)
+    {
+        $requiredCredentials = array(
+            self::CREDENTIAL_APPLICATION_ID,
+            self::CREDENTIAL_APPLICATION_KEY,
+        );
+
+        $missingCredentials = array_diff($requiredCredentials, array_keys($credentialHeaders));
+
+        if (count($missingCredentials) > 0) {
+            throw new Exception\InvalidArgumentException(
+                sprintf(
+                    'Invalid credential headers; missing "%s"',
+                    implode('", "', $missingCredentials)
+                )
+            );
+        }
+
+        $this->credentialHeaders = $credentialHeaders;
+    }
+
+    /**
      * @return Result
      */
     protected function auth()
@@ -96,8 +164,8 @@ class ThreeScaleAdapter extends BaseAdapter implements
 
         try {
             $response = @$client->authorize(
-                $credentials['id'],
-                $credentials['key'],
+                $credentials[self::CREDENTIAL_APPLICATION_ID],
+                $credentials[self::CREDENTIAL_APPLICATION_KEY],
                 $this->getServiceId(),
                 $usage
             );
@@ -144,22 +212,6 @@ class ThreeScaleAdapter extends BaseAdapter implements
     }
 
     /**
-     * @return boolean
-     */
-    public function usePlanAsRole()
-    {
-        return $this->usePlanAsRole;
-    }
-
-    /**
-     * @param boolean $usePlanAsRole
-     */
-    public function setUsePlanAsRole($usePlanAsRole)
-    {
-        $this->usePlanAsRole = $usePlanAsRole;
-    }
-
-    /**
      * @return array|Result
      */
     protected function getCredentials()
@@ -175,22 +227,25 @@ class ThreeScaleAdapter extends BaseAdapter implements
             );
         }
 
-        $appId  = $request->getHeader(self::HEADER_APPLICATION_ID);
-        $appKey = $request->getHeader(self::HEADER_APPLICATION_KEY);
+        $appIdHeader  = $this->getCredentialHeader(self::CREDENTIAL_APPLICATION_ID);
+        $appKeyHeader = $this->getCredentialHeader(self::CREDENTIAL_APPLICATION_KEY);
+
+        $appId  = $request->getHeader($appIdHeader);
+        $appKey = $request->getHeader($appKeyHeader);
 
         $messages = array();
 
         if (!$appId) {
             $messages[] = sprintf(
                 'Missing application identifier; provide one using the "%s" header',
-                self::HEADER_APPLICATION_ID
+                $appIdHeader
             );
         }
 
         if (!$appKey) {
             $messages[] = sprintf(
                 'Missing application key; provide one using the "%s" header',
-                self::HEADER_APPLICATION_KEY
+                $appKeyHeader
             );
         }
 
@@ -199,8 +254,8 @@ class ThreeScaleAdapter extends BaseAdapter implements
         }
 
         return array(
-            'id'  => $appId->getFieldValue(),
-            'key' => $appKey->getFieldValue(),
+            self::CREDENTIAL_APPLICATION_ID  => $appId->getFieldValue(),
+            self::CREDENTIAL_APPLICATION_KEY => $appKey->getFieldValue(),
         );
     }
 }
