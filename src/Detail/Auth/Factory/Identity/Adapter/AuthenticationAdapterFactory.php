@@ -2,29 +2,23 @@
 
 namespace Detail\Auth\Factory\Identity\Adapter;
 
-use Zend\ServiceManager\FactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
-use Zend\ServiceManager\ServiceLocatorAwareInterface;
 
 use Detail\Auth\Exception\ConfigException;
 use Detail\Auth\Identity\Adapter\AuthenticationAdapter as Adapter;
+use Detail\Auth\Options\Identity\IdentityOptions;
 
-class AuthenticationAdapterFactory implements FactoryInterface
+class AuthenticationAdapterFactory extends BaseAdapterFactory
 {
     /**
-     * {@inheritDoc}
+     * @param ServiceLocatorInterface $serviceLocator
+     * @param IdentityOptions $identityOptions
      * @return Adapter
      */
-    public function createService(ServiceLocatorInterface $serviceLocator)
-    {
-        if ($serviceLocator instanceof ServiceLocatorAwareInterface) {
-            $serviceLocator = $serviceLocator->getServiceLocator();
-        }
-
-        /** @var \Detail\Auth\Options\ModuleOptions $moduleOptions */
-        $moduleOptions = $serviceLocator->get('Detail\Auth\Options\ModuleOptions');
-        $identityOptions = $moduleOptions->getIdentity();
-
+    protected function createAdapter(
+        ServiceLocatorInterface $serviceLocator,
+        IdentityOptions $identityOptions
+    ) {
         /** @var \Detail\Auth\Options\Identity\Adapter\AuthenticationAdapterOptions $adapterOptions */
         $adapterOptions = $identityOptions->getAdapterOptions(
             'authentication',

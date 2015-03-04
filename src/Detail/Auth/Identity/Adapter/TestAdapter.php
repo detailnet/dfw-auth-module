@@ -4,8 +4,7 @@ namespace Detail\Auth\Identity\Adapter;
 
 use Detail\Auth\Identity\Result;
 
-class TestAdapter implements
-    AdapterInterface
+class TestAdapter extends BaseAdapter
 {
     /**
      * @var boolean
@@ -65,7 +64,7 @@ class TestAdapter implements
     /**
      * @return Result
      */
-    public function authenticate()
+    protected function auth()
     {
         return new Result($this->getResult(), null, array($this->getErrorMessage()));
     }

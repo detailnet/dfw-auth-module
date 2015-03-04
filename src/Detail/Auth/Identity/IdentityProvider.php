@@ -179,11 +179,25 @@ class IdentityProvider implements
         $events = $this->getEventManager();
 
         $preEvent = $this->prepareEvent(IdentityProviderEvent::EVENT_PRE_AUTHENTICATE, $preEventParams);
-        $events->triggerUntil($preEvent, function ($result) {
+        $eventResults = $events->triggerUntil($preEvent, function ($result) {
             /** @todo Give listeners the opportunity to provide an identity (in which case we wouldn't continue with authentication) */
-            // Don't authenticate when a listener returns false
+            // Stop the execution when a listeners returns false
             return ($result === false);
         });
+
+        // Don't authenticate when a listener stops the execution of the event
+        if ($eventResults->stopped()) {
+            return new Result(
+                false,
+                null,
+                array(
+                    sprintf(
+                        'Authentication was stopped by a listener during "%s"',
+                        IdentityProviderEvent::EVENT_PRE_AUTHENTICATE
+                    )
+                )
+            );
+        }
 
         try {
             $result = $adapter->authenticate();
@@ -193,7 +207,7 @@ class IdentityProvider implements
                 $this->identity = $result->getIdentity() ?: new Identity('admin');
             }
         } catch (Exception\AuthenticationException $e) {
-            $result = new Result(false, array($e->getMessage()));
+            $result = new Result(false, null, array($e->getMessage()));
 
             /** @todo We should handle logging through an event (authentication.error) */
             $logData = array(
@@ -235,6 +249,11 @@ class IdentityProvider implements
         return $this->identity;
     }
 
+    /**
+     * @param string $name
+     * @param array $params
+     * @return IdentityProviderEvent
+     */
     protected function prepareEvent($name, array $params)
     {
         $event = new IdentityProviderEvent($name, $this, $this->prepareEventParams($params));
@@ -248,7 +267,7 @@ class IdentityProvider implements
      * Ensures event parameters are created as an array object, allowing them to be modified
      * by listeners and retrieved.
      *
-     * @param  array $params
+     * @param array $params
      * @return ArrayObject
      */
     protected function prepareEventParams(array $params)

@@ -13,8 +13,7 @@ use Detail\Auth\Identity\Exception;
 use Detail\Auth\Identity\Identity;
 use Detail\Auth\Identity\Result;
 
-class ThreeScaleAdapter implements
-    AdapterInterface
+class ThreeScaleAdapter extends BaseAdapter
 {
     const HEADER_APPLICATION_ID  = 'DWS-App-ID';
     const HEADER_APPLICATION_KEY = 'DWS-App-Key';
@@ -102,7 +101,7 @@ class ThreeScaleAdapter implements
     /**
      * @return Result
      */
-    public function authenticate()
+    protected function auth()
     {
         $credentials = $this->getCredentials();
 

@@ -70,6 +70,7 @@ return array(
                     'error_message' => null,
                 ),
             ),
+            'listeners' => array(),
         ),
     ),
 );

@@ -6,8 +6,7 @@ use Detail\Auth\Identity\AdapterManager;
 use Detail\Auth\Identity\Result;
 use Detail\Auth\Identity\ResultInterface;
 
-class ChainedAdapter implements
-    AdapterInterface
+class ChainedAdapter extends BaseAdapter
 {
     /**
      * @var AdapterManager
@@ -77,7 +76,7 @@ class ChainedAdapter implements
     /**
      * @return ResultInterface
      */
-    public function authenticate()
+    protected function auth()
     {
         $messages = array();
 

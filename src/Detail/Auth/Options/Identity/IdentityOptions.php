@@ -14,7 +14,7 @@ class IdentityOptions extends AbstractOptions
     protected $defaultAdapter;
 
     /**
-     * @var array
+     * @var string[]
      */
     protected $adapterFactories = array();
 
@@ -22,6 +22,11 @@ class IdentityOptions extends AbstractOptions
      * @var array
      */
     protected $adapters = array();
+
+    /**
+     * @var string[]
+     */
+    protected $listeners = array();
 
     /**
      * @return string
@@ -40,7 +45,7 @@ class IdentityOptions extends AbstractOptions
     }
 
     /**
-     * @return array
+     * @return string[]
      */
     public function getAdapterFactories()
     {
@@ -48,7 +53,7 @@ class IdentityOptions extends AbstractOptions
     }
 
     /**
-     * @param array $adapterFactories
+     * @param string[] $adapterFactories
      */
     public function setAdapterFactories(array $adapterFactories)
     {
@@ -101,5 +106,21 @@ class IdentityOptions extends AbstractOptions
     public function setAdapters(array $adapters)
     {
         $this->adapters = $adapters;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getListeners()
+    {
+        return $this->listeners;
+    }
+
+    /**
+     * @param string[] $listeners
+     */
+    public function setListeners(array $listeners)
+    {
+        $this->listeners = $listeners;
     }
 }

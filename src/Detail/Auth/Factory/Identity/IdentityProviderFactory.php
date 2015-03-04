@@ -30,6 +30,13 @@ class IdentityProviderFactory implements FactoryInterface
             $identityProvider->setDefaultAdapterType($defaultAdapter);
         }
 
+        foreach ($identityOptions->getListeners() as $listenerClass) {
+            /** @var \Zend\EventManager\ListenerAggregateInterface $listener */
+            $listener = $serviceLocator->get($listenerClass);
+
+            $identityProvider->getEventManager()->attachAggregate($listener);
+        }
+
         return $identityProvider;
     }
 }

@@ -6,8 +6,7 @@ use Zend\Authentication\AuthenticationService;
 
 use Detail\Auth\Identity\Result;
 
-class AuthenticationAdapter implements
-    AdapterInterface
+class AuthenticationAdapter extends BaseAdapter
 {
     /**
      * @var AuthenticationService
@@ -41,7 +40,7 @@ class AuthenticationAdapter implements
     /**
      * @return Result
      */
-    public function authenticate()
+    protected function auth()
     {
         $authenticationService = $this->getAuthenticationService();
         $valid = true;
