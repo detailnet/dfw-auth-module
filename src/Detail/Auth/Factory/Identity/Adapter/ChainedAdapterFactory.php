@@ -21,7 +21,7 @@ class ChainedAdapterFactory extends BaseAdapterFactory
     ) {
         /** @var \Detail\Auth\Options\Identity\Adapter\ChainedAdapterOptions $adapterOptions */
         $adapterOptions = $identityOptions->getAdapterOptions(
-            'chained',
+            Adapter::CLASS,
             'Detail\Auth\Options\Identity\Adapter\ChainedAdapterOptions'
         );
 

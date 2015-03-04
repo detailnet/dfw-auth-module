@@ -12,9 +12,9 @@ use Zend\ModuleManager\Feature\ControllerProviderInterface;
 use Zend\ModuleManager\Feature\ServiceProviderInterface;
 use Zend\Mvc\MvcEvent;
 
-use Detail\Auth\Identity\Adapter\ThreeScaleAdapter;
-use Detail\Auth\Identity\IdentityAdapterEvent;
+use Detail\Auth\Identity\Event;
 use Detail\Auth\Service\HttpRequestAwareInterface;
+use Detail\Auth\Service\MvcEventAwareInterface;
 
 class Module implements
     AutoloaderProviderInterface,
@@ -44,8 +44,9 @@ class Module implements
             return;
         }
 
-        $injectRequest = function(IdentityAdapterEvent $authEvent) use ($request) {
-            $adapter = $authEvent->getParam(IdentityAdapterEvent::PARAM_ADAPTER);
+        // This is somewhat redundant since each event will be injected with the MVC event.
+        $injectRequest = function(Event\IdentityAdapterEvent $authEvent) use ($request) {
+            $adapter = $authEvent->getParam(Event\IdentityAdapterEvent::PARAM_ADAPTER);
 
             if ($adapter instanceof HttpRequestAwareInterface
                 && $request instanceof HttpRequest
@@ -54,10 +55,19 @@ class Module implements
             }
         };
 
-        $identityProvider->getEventManager()->attach(
-            IdentityAdapterEvent::EVENT_PRE_AUTHENTICATE,
-            $injectRequest
-        );
+        $injectMvcEvent = function(Event\IdentityEventInterface $identityEvent) use ($event) {
+            if ($identityEvent instanceof MvcEventAwareInterface) {
+                $identityEvent->setMvcEvent($event);
+            }
+        };
+
+        // Make sure the MvcEvent object get's injected first (high priority)
+        $events = $identityProvider->getEventManager();
+        $events->attach(Event\IdentityProviderEvent::EVENT_PRE_AUTHENTICATE, $injectMvcEvent, 10000);
+        $events->attach(Event\IdentityAdapterEvent::EVENT_PRE_AUTHENTICATE, $injectMvcEvent, 10000);
+        $events->attach(Event\IdentityAdapterEvent::EVENT_PRE_AUTHENTICATE, $injectRequest, 9999);
+        $events->attach(Event\IdentityAdapterEvent::EVENT_AUTHENTICATE, $injectMvcEvent, 10000);
+        $events->attach(Event\IdentityProviderEvent::EVENT_AUTHENTICATE, $injectMvcEvent, 10000);
     }
 
     public function bootstrapNavigation(MvcEvent $event)

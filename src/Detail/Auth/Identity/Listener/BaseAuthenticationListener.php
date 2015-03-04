@@ -5,8 +5,7 @@ namespace Detail\Auth\Identity\Listener;
 use Zend\EventManager\EventManagerInterface;
 use Zend\EventManager\ListenerAggregateInterface;
 
-use Detail\Auth\Identity\IdentityProviderEvent;
-use Detail\Auth\Identity\IdentityAdapterEvent;
+use Detail\Auth\Identity\Event;
 
 abstract class BaseAuthenticationListener implements
     ListenerAggregateInterface
@@ -27,22 +26,22 @@ abstract class BaseAuthenticationListener implements
     public function attach(EventManagerInterface $eventManager)
     {
         $this->listeners[] = $eventManager->attach(
-            IdentityProviderEvent::EVENT_PRE_AUTHENTICATE,
+            Event\IdentityProviderEvent::EVENT_PRE_AUTHENTICATE,
             array($this, 'onPreAuthenticate')
         );
 
         $this->listeners[] = $eventManager->attach(
-            IdentityProviderEvent::EVENT_AUTHENTICATE,
+            Event\IdentityProviderEvent::EVENT_AUTHENTICATE,
             array($this, 'onAuthenticate')
         );
 
         $this->listeners[] = $eventManager->attach(
-            IdentityAdapterEvent::EVENT_PRE_AUTHENTICATE,
+            Event\IdentityAdapterEvent::EVENT_PRE_AUTHENTICATE,
             array($this, 'onAdapterPreAuthenticate')
         );
 
         $this->listeners[] = $eventManager->attach(
-            IdentityAdapterEvent::EVENT_AUTHENTICATE,
+            Event\IdentityAdapterEvent::EVENT_AUTHENTICATE,
             array($this, 'onAdapterAuthenticate')
         );
     }
@@ -66,28 +65,28 @@ abstract class BaseAuthenticationListener implements
     /**
      * Listener for the "authenticate.pre" event.
      *
-     * @param IdentityProviderEvent $event
+     * @param Event\IdentityProviderEvent $event
      */
-    abstract public function onPreAuthenticate(IdentityProviderEvent $event);
+    abstract public function onPreAuthenticate(Event\IdentityProviderEvent $event);
 
     /**
      * Listener for the "authenticate" event.
      *
-     * @param IdentityProviderEvent $event
+     * @param Event\IdentityProviderEvent $event
      */
-    abstract public function onAuthenticate(IdentityProviderEvent $event);
+    abstract public function onAuthenticate(Event\IdentityProviderEvent $event);
 
     /**
      * Listener for the "adapter.authenticate.pre" event.
      *
-     * @param IdentityAdapterEvent $event
+     * @param Event\IdentityAdapterEvent $event
      */
-    abstract public function onAdapterPreAuthenticate(IdentityAdapterEvent $event);
+    abstract public function onAdapterPreAuthenticate(Event\IdentityAdapterEvent $event);
 
     /**
      * Listener for the "adapter.authenticate" event.
      *
-     * @param IdentityAdapterEvent $event
+     * @param Event\IdentityAdapterEvent $event
      */
-    abstract public function onAdapterAuthenticate(IdentityAdapterEvent $event);
+    abstract public function onAdapterAuthenticate(Event\IdentityAdapterEvent $event);
 }

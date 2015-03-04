@@ -168,7 +168,10 @@ class ThreeScaleAdapter extends BaseAdapter implements
 
         if ($request === null) {
             throw new Exception\RuntimeException(
-                sprintf('Request object must be set before calling %s()', __METHOD__)
+                sprintf(
+                    'Request object must be set before calling %s::authenticate()',
+                    get_class($this)
+                )
             );
         }
 

@@ -21,7 +21,7 @@ class ThreeScaleAdapterFactory extends BaseAdapterFactory
     ) {
         /** @var \Detail\Auth\Options\Identity\Adapter\ThreeScaleAdapterOptions $adapterOptions */
         $adapterOptions = $identityOptions->getAdapterOptions(
-            '3scale',
+            Adapter::CLASS,
             'Detail\Auth\Options\Identity\Adapter\ThreeScaleAdapterOptions'
         );
 

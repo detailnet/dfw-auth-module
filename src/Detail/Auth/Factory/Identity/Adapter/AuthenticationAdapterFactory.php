@@ -21,7 +21,7 @@ class AuthenticationAdapterFactory extends BaseAdapterFactory
     ) {
         /** @var \Detail\Auth\Options\Identity\Adapter\AuthenticationAdapterOptions $adapterOptions */
         $adapterOptions = $identityOptions->getAdapterOptions(
-            'authentication',
+            Adapter::CLASS,
             'Detail\Auth\Options\Identity\Adapter\AuthenticationAdapterOptions'
         );
 

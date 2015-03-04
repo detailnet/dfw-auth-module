@@ -20,7 +20,7 @@ class TestAdapterFactory extends BaseAdapterFactory
     ) {
         /** @var \Detail\Auth\Options\Identity\Adapter\TestAdapterOptions $adapterOptions */
         $adapterOptions = $identityOptions->getAdapterOptions(
-            'test',
+            Adapter::CLASS,
             'Detail\Auth\Options\Identity\Adapter\TestAdapterOptions'
         );
 

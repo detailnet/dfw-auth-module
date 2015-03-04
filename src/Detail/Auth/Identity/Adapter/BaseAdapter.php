@@ -5,11 +5,11 @@ namespace Detail\Auth\Identity\Adapter;
 use ArrayObject;
 
 //use Zend\EventManager\EventManager;
-use Detail\Auth\Identity\Result;
-use Detail\Auth\Identity\ResultInterface;
 use Zend\EventManager\EventManagerInterface;
 
-use Detail\Auth\Identity\IdentityAdapterEvent;
+use Detail\Auth\Identity\Event;
+use Detail\Auth\Identity\Result;
+use Detail\Auth\Identity\ResultInterface;
 
 abstract class BaseAdapter implements
     AdapterInterface
@@ -84,12 +84,12 @@ abstract class BaseAdapter implements
     public function authenticate()
     {
         $preEventParams = array(
-            IdentityAdapterEvent::PARAM_ADAPTER => $this,
+            Event\IdentityAdapterEvent::PARAM_ADAPTER => $this,
         );
 
         $events = $this->getEventManager();
 
-        $preEvent = $this->prepareEvent(IdentityAdapterEvent::EVENT_PRE_AUTHENTICATE, $preEventParams);
+        $preEvent = $this->prepareEvent(Event\IdentityAdapterEvent::EVENT_PRE_AUTHENTICATE, $preEventParams);
         $eventResults = $events->triggerUntil($preEvent, function ($result) {
             // Stop the execution when a listeners returns false
             return ($result === false);
@@ -103,7 +103,7 @@ abstract class BaseAdapter implements
                 array(
                     sprintf(
                         'Authentication was stopped by a listener during "%s"',
-                        IdentityAdapterEvent::EVENT_PRE_AUTHENTICATE
+                        Event\IdentityAdapterEvent::EVENT_PRE_AUTHENTICATE
                     )
                 )
             );
@@ -114,13 +114,13 @@ abstract class BaseAdapter implements
         $postEventParams = array_merge(
             $preEventParams,
             array(
-                IdentityAdapterEvent::PARAM_IDENTITY => $result->getIdentity(),
-                IdentityAdapterEvent::PARAM_RESULT   => $result,
-                IdentityAdapterEvent::PARAM_VALID    => $result->isValid(),
+                Event\IdentityAdapterEvent::PARAM_IDENTITY => $result->getIdentity(),
+                Event\IdentityAdapterEvent::PARAM_RESULT   => $result,
+                Event\IdentityAdapterEvent::PARAM_VALID    => $result->isValid(),
             )
         );
 
-        $postEvent = $this->prepareEvent(IdentityAdapterEvent::EVENT_AUTHENTICATE, $postEventParams);
+        $postEvent = $this->prepareEvent(Event\IdentityAdapterEvent::EVENT_AUTHENTICATE, $postEventParams);
         $events->trigger($postEvent);
 
         return $result;
@@ -129,11 +129,11 @@ abstract class BaseAdapter implements
     /**
      * @param string $name
      * @param array $params
-     * @return IdentityAdapterEvent
+     * @return Event\IdentityAdapterEvent
      */
     protected function prepareEvent($name, array $params)
     {
-        $event = new IdentityAdapterEvent($name, $this, $this->prepareEventParams($params));
+        $event = new Event\IdentityAdapterEvent($name, $this, $this->prepareEventParams($params));
 
         return $event;
     }

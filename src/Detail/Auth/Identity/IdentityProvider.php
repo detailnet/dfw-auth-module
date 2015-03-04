@@ -173,12 +173,12 @@ class IdentityProvider implements
         }
 
         $preEventParams = array(
-            IdentityProviderEvent::PARAM_ADAPTER => $adapter,
+            Event\IdentityProviderEvent::PARAM_ADAPTER => $adapter,
         );
 
         $events = $this->getEventManager();
 
-        $preEvent = $this->prepareEvent(IdentityProviderEvent::EVENT_PRE_AUTHENTICATE, $preEventParams);
+        $preEvent = $this->prepareEvent(Event\IdentityProviderEvent::EVENT_PRE_AUTHENTICATE, $preEventParams);
         $eventResults = $events->triggerUntil($preEvent, function ($result) {
             /** @todo Give listeners the opportunity to provide an identity (in which case we wouldn't continue with authentication) */
             // Stop the execution when a listeners returns false
@@ -193,7 +193,7 @@ class IdentityProvider implements
                 array(
                     sprintf(
                         'Authentication was stopped by a listener during "%s"',
-                        IdentityProviderEvent::EVENT_PRE_AUTHENTICATE
+                        Event\IdentityProviderEvent::EVENT_PRE_AUTHENTICATE
                     )
                 )
             );
@@ -223,13 +223,13 @@ class IdentityProvider implements
         $postEventParams = array_merge(
             $preEventParams,
             array(
-                IdentityProviderEvent::PARAM_IDENTITY => $this->identity,
-                IdentityProviderEvent::PARAM_RESULT   => $result,
-                IdentityProviderEvent::PARAM_VALID    => $result->isValid(),
+                Event\IdentityProviderEvent::PARAM_IDENTITY => $this->identity,
+                Event\IdentityProviderEvent::PARAM_RESULT   => $result,
+                Event\IdentityProviderEvent::PARAM_VALID    => $result->isValid(),
             )
         );
 
-        $postEvent = $this->prepareEvent(IdentityProviderEvent::EVENT_AUTHENTICATE, $postEventParams);
+        $postEvent = $this->prepareEvent(Event\IdentityProviderEvent::EVENT_AUTHENTICATE, $postEventParams);
         $events->trigger($postEvent);
 
         return $result;
@@ -252,11 +252,11 @@ class IdentityProvider implements
     /**
      * @param string $name
      * @param array $params
-     * @return IdentityProviderEvent
+     * @return Event\IdentityProviderEvent
      */
     protected function prepareEvent($name, array $params)
     {
-        $event = new IdentityProviderEvent($name, $this, $this->prepareEventParams($params));
+        $event = new Event\IdentityProviderEvent($name, $this, $this->prepareEventParams($params));
 
         return $event;
     }

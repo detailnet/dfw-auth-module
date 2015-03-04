@@ -14,6 +14,7 @@ return array(
             'Detail\Auth\Authorization\View\Listener\NavigationListener' => 'Detail\Auth\Factory\Authorization\View\Listener\NavigationListenerFactory',
             'Detail\Auth\Identity\AdapterManager' => 'Detail\Auth\Factory\Identity\AdapterManagerFactory',
             'Detail\Auth\Identity\IdentityProvider' => 'Detail\Auth\Factory\Identity\IdentityProviderFactory',
+            'Detail\Auth\Identity\Listener\RoutesListener' => 'Detail\Auth\Factory\Identity\Listener\RoutesListenerFactory',
             'Detail\Auth\Options\ModuleOptions' => 'Detail\Auth\Factory\Options\ModuleOptionsFactory',
             'Detail\Auth\Options\ThreeScaleOptions' => 'Detail\Auth\Factory\Options\ThreeScaleOptionsFactory',
             'ThreeScaleClient' => 'Detail\Auth\Factory\ThreeScale\ThreeScaleClientFactory',
@@ -47,30 +48,32 @@ return array(
             ),
         ),
         'identity' => array(
-            'default_adapter' => 'test',
+            'default_adapter' => 'Detail\Auth\Identity\Adapter\TestAdapter',
             'adapter_factories' => array(
-                '3scale' => 'Detail\Auth\Factory\Identity\Adapter\ThreeScaleAdapterFactory',
-                'authentication' => 'Detail\Auth\Factory\Identity\Adapter\AuthenticationAdapterFactory',
-                'chained' => 'Detail\Auth\Factory\Identity\Adapter\ChainedAdapterFactory',
-                'test' => 'Detail\Auth\Factory\Identity\Adapter\TestAdapterFactory',
+                'Detail\Auth\Identity\Adapter\ThreeScaleAdapter' => 'Detail\Auth\Factory\Identity\Adapter\ThreeScaleAdapterFactory',
+                'Detail\Auth\Identity\Adapter\AuthenticationAdapter' => 'Detail\Auth\Factory\Identity\Adapter\AuthenticationAdapterFactory',
+                'Detail\Auth\Identity\Adapter\ChainedAdapter' => 'Detail\Auth\Factory\Identity\Adapter\ChainedAdapterFactory',
+                'Detail\Auth\Identity\Adapter\TestAdapter' => 'Detail\Auth\Factory\Identity\Adapter\TestAdapterFactory',
             ),
             'adapters' => array(
-                '3scale' => array(
+                'Detail\Auth\Identity\Adapter\ThreeScaleAdapter' => array(
                     'client' => 'ThreeScaleClient',
                 ),
-                'authentication' => array(
+                'Detail\Auth\Identity\Adapter\AuthenticationAdapter' => array(
                     'service' => 'Zend\Authentication\AuthenticationService',
                 ),
-                'chained' => array(
+                'Detail\Auth\Identity\Adapter\ChainedAdapter' => array(
                     'adapters' => array(
                     ),
                 ),
-                'test' => array(
+                'Detail\Auth\Identity\Adapter\TestAdapter' => array(
                     'result' => true,
                     'error_message' => null,
                 ),
             ),
-            'listeners' => array(),
+            'listeners' => array(
+                'Detail\Auth\Identity\Listener\RoutesListener',
+            ),
         ),
     ),
 );
