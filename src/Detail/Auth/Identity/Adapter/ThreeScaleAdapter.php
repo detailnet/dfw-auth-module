@@ -7,14 +7,17 @@ use ThreeScaleAuthorizeResponse;
 use ThreeScaleClient;
 use ThreeScaleServerError;
 
-use Zend\Http\Request as HttpRequest;
-
 use Detail\Auth\Identity\Exception;
 use Detail\Auth\Identity\Identity;
 use Detail\Auth\Identity\Result;
+use Detail\Auth\Service\HttpRequestAwareInterface;
+use Detail\Auth\Service\HttpRequestAwareTrait;
 
-class ThreeScaleAdapter extends BaseAdapter
+class ThreeScaleAdapter extends BaseAdapter implements
+    HttpRequestAwareInterface
 {
+    use HttpRequestAwareTrait;
+
     const HEADER_APPLICATION_ID  = 'DWS-App-ID';
     const HEADER_APPLICATION_KEY = 'DWS-App-Key';
 
@@ -32,11 +35,6 @@ class ThreeScaleAdapter extends BaseAdapter
      * @var boolean
      */
     protected $usePlanAsRole;
-
-        /**
-     * @var HttpRequest
-     */
-    protected $request;
 
     /**
      * @param ThreeScaleClient $client
@@ -80,22 +78,6 @@ class ThreeScaleAdapter extends BaseAdapter
     public function setServiceId($serviceId)
     {
         $this->serviceId = $serviceId;
-    }
-
-    /**
-     * @return HttpRequest
-     */
-    public function getRequest()
-    {
-        return $this->request;
-    }
-
-    /**
-     * @param HttpRequest $request
-     */
-    public function setRequest(HttpRequest $request)
-    {
-        $this->request = $request;
     }
 
     /**

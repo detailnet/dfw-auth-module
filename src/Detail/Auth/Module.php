@@ -12,9 +12,9 @@ use Zend\ModuleManager\Feature\ControllerProviderInterface;
 use Zend\ModuleManager\Feature\ServiceProviderInterface;
 use Zend\Mvc\MvcEvent;
 
-use Detail\Auth\Identity\Adapter\ChainedAdapter;
 use Detail\Auth\Identity\Adapter\ThreeScaleAdapter;
-use Detail\Auth\Identity\IdentityProviderEvent;
+use Detail\Auth\Identity\IdentityAdapterEvent;
+use Detail\Auth\Service\HttpRequestAwareInterface;
 
 class Module implements
     AutoloaderProviderInterface,
@@ -44,16 +44,10 @@ class Module implements
             return;
         }
 
-        $injectRequest = function(IdentityProviderEvent $authEvent) use ($request) {
-            $adapter = $authEvent->getParam(IdentityProviderEvent::PARAM_ADAPTER);
+        $injectRequest = function(IdentityAdapterEvent $authEvent) use ($request) {
+            $adapter = $authEvent->getParam(IdentityAdapterEvent::PARAM_ADAPTER);
 
-            if ($adapter instanceof ChainedAdapter) {
-                $adapter = $adapter->getAdapter('3scale');
-            }
-
-            /** @todo Use interface in adapters that need HttpRequest */
-//            if ($adapter instanceof HttpRequestAwareAdapterInterface
-            if ($adapter instanceof ThreeScaleAdapter
+            if ($adapter instanceof HttpRequestAwareInterface
                 && $request instanceof HttpRequest
             ) {
                 $adapter->setRequest($request);
@@ -61,7 +55,7 @@ class Module implements
         };
 
         $identityProvider->getEventManager()->attach(
-            IdentityProviderEvent::EVENT_PRE_AUTHENTICATE,
+            IdentityAdapterEvent::EVENT_PRE_AUTHENTICATE,
             $injectRequest
         );
     }
