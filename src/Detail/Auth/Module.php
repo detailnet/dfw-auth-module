@@ -40,7 +40,7 @@ class Module implements
 
         if ($request instanceof ConsoleRequest) {
             /** @todo We should probably disable the authentication instead of using a test/dummy adapter... */
-            $identityProvider->setDefaultAdapterType('test');
+            $identityProvider->setDefaultAdapterType(__NAMESPACE__ . '\Identity\Adapter\TestAdapter');
             return;
         }
 
