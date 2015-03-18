@@ -38,12 +38,6 @@ class Module implements
 
         $request = $event->getRequest();
 
-        if ($request instanceof ConsoleRequest) {
-            /** @todo We should probably disable the authentication instead of using a test/dummy adapter... */
-            $identityProvider->setDefaultAdapterType(__NAMESPACE__ . '\Identity\Adapter\TestAdapter');
-            return;
-        }
-
         // This is somewhat redundant since each event will be injected with the MVC event.
         $injectRequest = function(Event\IdentityAdapterEvent $authEvent) use ($request) {
             $adapter = $authEvent->getParam(Event\IdentityAdapterEvent::PARAM_ADAPTER);
@@ -68,6 +62,11 @@ class Module implements
         $events->attach(Event\IdentityAdapterEvent::EVENT_PRE_AUTHENTICATE, $injectRequest, 9999);
         $events->attach(Event\IdentityAdapterEvent::EVENT_AUTHENTICATE, $injectMvcEvent, 10000);
         $events->attach(Event\IdentityProviderEvent::EVENT_AUTHENTICATE, $injectMvcEvent, 10000);
+
+        if ($request instanceof ConsoleRequest) {
+            /** @todo We should probably disable the authentication instead of using a test/dummy adapter... */
+            $identityProvider->setDefaultAdapterType(__NAMESPACE__ . '\Identity\Adapter\TestAdapter');
+        }
     }
 
     public function bootstrapNavigation(MvcEvent $event)
