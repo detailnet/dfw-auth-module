@@ -30,7 +30,7 @@ class ChainedAdapterFactory extends BaseAdapterFactory
         $chainedAdapters = $adapterOptions->getAdapters();
 
         if (count($chainedAdapters) === 0) {
-            throw new ConfigException('Chained adapter required at least one adapter');
+            throw new ConfigException('Chained adapter requires at least one adapter');
         }
 
         $adapter = new Adapter($adapters, $chainedAdapters);

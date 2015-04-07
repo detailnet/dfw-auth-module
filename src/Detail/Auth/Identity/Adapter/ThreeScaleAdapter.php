@@ -2,11 +2,12 @@
 
 namespace Detail\Auth\Identity\Adapter;
 
-use ThreeScaleResponse;
 use Zend\Cache\Storage\StorageInterface as CacheStorage;
+//use Zend\EventManager\EventsCapableInterface;
 
 use ThreeScaleAuthorizeResponse;
 use ThreeScaleClient;
+use ThreeScaleResponse;
 use ThreeScaleServerError;
 
 use Detail\Auth\Identity\Exception;
@@ -166,6 +167,12 @@ class ThreeScaleAdapter extends BaseAdapter implements
      */
     public function setCache(CacheStorage $cache)
     {
+//        if ($cache instanceof EventsCapableInterface) {
+//            $events = $cache->getEventManager();
+//
+//            // We are interested in the "hasItem.exception" and "getItem.exception" events...
+//        }
+
         $this->cache = $cache;
     }
 
@@ -203,6 +210,7 @@ class ThreeScaleAdapter extends BaseAdapter implements
 
     /**
      * @return Result
+     * @todo Use MvcEvent listener to log authentication in background (using an IronMQ queue)
      */
     protected function auth()
     {
@@ -211,7 +219,6 @@ class ThreeScaleAdapter extends BaseAdapter implements
 
         // The application might already be authenticated
         if ($cache !== null && $cacheKey !== null && $cache->hasItem($cacheKey)) {
-            /** @todo We should silently fail when cache is unavailable */
             $identity = new Identity($cache->getItem($cacheKey));
             return new Result(true, $identity);
         }
@@ -224,8 +231,6 @@ class ThreeScaleAdapter extends BaseAdapter implements
         } catch (Exception\CredentialMissingException $e) {
             return new Result(false, null, array($e->getMessage()));
         }
-
-        /** @todo Use MvcEvent listener to log calls in background (using an IronMQ queue) */
 
         if (!$response->isSuccess()) {
             return new Result(false, null, array($response->getErrorMessage()));
@@ -240,7 +245,6 @@ class ThreeScaleAdapter extends BaseAdapter implements
         $identity = new Identity($role);
 
         if ($cache !== null && $cacheKey !== null) {
-            /** @todo We should silently fail when cache is unavailable */
             $cache->setItem($cacheKey, $role);
         }
 
