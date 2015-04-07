@@ -2,13 +2,15 @@
 
 namespace Detail\Auth\Identity\Adapter;
 
-use Detail\Auth\Identity\ResultInterface;
+use Zend\Cache\Storage\StorageInterface as CacheStorage;
+
 use ThreeScaleAuthorizeResponse;
 use ThreeScaleClient;
 use ThreeScaleServerError;
 
 use Detail\Auth\Identity\Exception;
 use Detail\Auth\Identity\Identity;
+use Detail\Auth\Identity\ResultInterface;
 use Detail\Auth\Identity\Result;
 use Detail\Auth\Service\HttpRequestAwareInterface;
 use Detail\Auth\Service\HttpRequestAwareTrait;
@@ -32,31 +34,42 @@ class ThreeScaleAdapter extends BaseAdapter implements
     protected $serviceId;
 
     /**
-     * @var boolean
-     */
-    protected $usePlanAsRole;
-
-    /**
      * @var string[]
      */
     protected $credentialHeaders;
 
     /**
+     * @var CacheStorage
+     */
+    protected $cache;
+
+    /**
+     * @var boolean
+     */
+    protected $usePlanAsRole;
+
+    /**
      * @param ThreeScaleClient $client
      * @param string $serviceId
-     * @param boolean $usePlanAsRole
      * @param array $credentialsHeaders
+     * @param CacheStorage $cache
+     * @param boolean $usePlanAsRole
      */
     public function __construct(
         ThreeScaleClient $client,
         $serviceId,
         array $credentialsHeaders,
+        CacheStorage $cache = null,
         $usePlanAsRole = true
     ) {
         $this->setClient($client);
         $this->setServiceId($serviceId);
         $this->setCredentialHeaders($credentialsHeaders);
         $this->setUsePlanAsRole($usePlanAsRole);
+
+        if ($cache !== null) {
+            $this->setCache($cache);
+        }
     }
 
     /**
@@ -70,7 +83,7 @@ class ThreeScaleAdapter extends BaseAdapter implements
     /**
      * @param ThreeScaleClient $client
      */
-    public function setClient($client)
+    public function setClient(ThreeScaleClient $client)
     {
         $this->client = $client;
     }
@@ -92,22 +105,6 @@ class ThreeScaleAdapter extends BaseAdapter implements
     }
 
     /**
-     * @return boolean
-     */
-    public function usePlanAsRole()
-    {
-        return $this->usePlanAsRole;
-    }
-
-    /**
-     * @param boolean $usePlanAsRole
-     */
-    public function setUsePlanAsRole($usePlanAsRole)
-    {
-        $this->usePlanAsRole = $usePlanAsRole;
-    }
-
-    /**
      * @param string $name
      * @return string
      */
@@ -122,6 +119,38 @@ class ThreeScaleAdapter extends BaseAdapter implements
     public function getCredentialHeaders()
     {
         return $this->credentialHeaders;
+    }
+
+    /**
+     * @return CacheStorage
+     */
+    public function getCache()
+    {
+        return $this->cache;
+    }
+
+    /**
+     * @param CacheStorage $cache
+     */
+    public function setCache(CacheStorage $cache)
+    {
+        $this->cache = $cache;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function usePlanAsRole()
+    {
+        return $this->usePlanAsRole;
+    }
+
+    /**
+     * @param boolean $usePlanAsRole
+     */
+    public function setUsePlanAsRole($usePlanAsRole)
+    {
+        $this->usePlanAsRole = $usePlanAsRole;
     }
 
     /**
@@ -153,10 +182,20 @@ class ThreeScaleAdapter extends BaseAdapter implements
      */
     protected function auth()
     {
+        $cache = $this->getCache();
         $credentials = $this->getCredentials();
 
         if ($credentials instanceof ResultInterface) {
             return $credentials;
+        }
+
+        $appId = $credentials[self::CREDENTIAL_APPLICATION_ID];
+
+        // The application might already be authenticated
+        if ($cache->hasItem($appId)) {
+            /** @todo We should silently fail when cache is unavailable */
+            $identity = new Identity($cache->getItem($appId));
+            return new Result(true, $identity);
         }
 
         $usage = array('hits' => 1);
@@ -193,7 +232,7 @@ class ThreeScaleAdapter extends BaseAdapter implements
 
         $messages = array();
         $plan = null;
-        $identity = null;
+        $role = null;
 
         if (!$response->isSuccess()) {
             $messages[(string) $response->getErrorCode()] = $response->getErrorMessage();
@@ -203,11 +242,23 @@ class ThreeScaleAdapter extends BaseAdapter implements
             $plan = $response->getPlan();
 
             if ($this->usePlanAsRole()) {
-                $identity = new Identity('3scale-' . $plan);
+                $role = '3scale-' . $plan;
             }
         }
 
-        /** @todo Actually authenticate */
+        if ($role === null) {
+            throw new Exception\AuthenticationFailedException(
+                'Failed to authenticate: No role assigned'
+            );
+        }
+
+        $identity = new Identity($role);
+
+        if ($cache !== null) {
+            /** @todo We should silently fail when cache is unavailable */
+           $cache->setItem($appId, $role);
+        }
+
         return new Result($response->isSuccess(), $identity, $messages);
     }
 
