@@ -332,14 +332,24 @@ class ThreeScaleAdapter extends BaseAdapter implements
      */
     protected function getCacheKey()
     {
-        // Of course, we are using the application identifier as cache key.
+        // We are basing the key on the credentials.
+        // So only when both application identifier and key are provided and are correct,
+        // the cache applies.
         try {
-            $appId = $this->getCredential(self::CREDENTIAL_APPLICATION_ID);
+            $cacheString = sprintf(
+                '3scale.%s-%s',
+                $this->getCredential(self::CREDENTIAL_APPLICATION_ID),
+                $this->getCredential(self::CREDENTIAL_APPLICATION_KEY)
+            );
+
+            // We're balancing speed and security (should only take a few milli seconds)...
+            $cacheKey = hash('sha256', $cacheString);
+
         } catch (Exception\CredentialMissingException $e) {
-            $appId = null;
+            $cacheKey = null;
         }
 
-        return $appId;
+        return $cacheKey;
     }
 
     /**
