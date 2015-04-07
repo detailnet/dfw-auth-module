@@ -14,6 +14,11 @@ class ThreeScaleAdapterOptions extends AbstractOptions
     /**
      * @var string
      */
+    protected $cache;
+
+    /**
+     * @var string
+     */
     protected $appIdHeader;
 
     /**
@@ -35,6 +40,22 @@ class ThreeScaleAdapterOptions extends AbstractOptions
     public function setClient($client)
     {
         $this->client = $client;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCache()
+    {
+        return $this->cache;
+    }
+
+    /**
+     * @param string $cache
+     */
+    public function setCache($cache)
+    {
+        $this->cache = $cache;
     }
 
     /**

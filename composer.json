@@ -40,14 +40,16 @@
         "zf-commons/zfc-rbac": "~2.4",
         "zfcampus/zf-mvc-auth": "~1.0-dev",
         "3scale/3scale_ws_api_for_php": "~2.6.2",
-        "zendframework/zend-authentication": "2.*"
+        "zendframework/zend-authentication": "2.*",
+        "zendframework/zend-cache": "2.*"
     },
     "suggest": {
         "zf-commons/zfc-rbac": "For usage of ZfcRbac based authorization",
         "zfcampus/zf-mvc-auth": "For usage of ZfcRbac based REST guard",
         "zendframework/zend-http": "For usage of ZfcRbac based REST guard",
         "3scale/3scale_ws_api_for_php": "For usage of the 3scale identity provider adapter",
-        "zendframework/zend-authentication": "For usage of the Zend Authentication identity provider adapter"
+        "zendframework/zend-authentication": "For usage of the Zend Authentication identity provider adapter",
+        "zendframework/zend-cache": "For usage of the caching features within the 3scale identity provider adapter"
     },
     "autoload": {
         "psr-0": {

@@ -2,9 +2,12 @@
 
 namespace Detail\Auth\Identity\Adapter;
 
-use Detail\Auth\Identity\ResultInterface;
+use Zend\Cache\Storage\StorageInterface as CacheStorage;
+//use Zend\EventManager\EventsCapableInterface;
+
 use ThreeScaleAuthorizeResponse;
 use ThreeScaleClient;
+use ThreeScaleResponse;
 use ThreeScaleServerError;
 
 use Detail\Auth\Identity\Exception;
@@ -32,31 +35,50 @@ class ThreeScaleAdapter extends BaseAdapter implements
     protected $serviceId;
 
     /**
-     * @var boolean
-     */
-    protected $usePlanAsRole;
-
-    /**
      * @var string[]
      */
     protected $credentialHeaders;
 
     /**
+     * @var CacheStorage
+     */
+    protected $cache;
+
+    /**
+     * @var boolean
+     */
+    protected $usePlanAsRole;
+
+    /**
+     * @var string
+     */
+    protected $defaultRole;
+
+    /**
      * @param ThreeScaleClient $client
      * @param string $serviceId
-     * @param boolean $usePlanAsRole
      * @param array $credentialsHeaders
+     * @param CacheStorage $cache
+     * @param boolean $usePlanAsRole
+     * @param string $defaultRole
      */
     public function __construct(
         ThreeScaleClient $client,
         $serviceId,
         array $credentialsHeaders,
-        $usePlanAsRole = true
+        CacheStorage $cache = null,
+        $usePlanAsRole = true,
+        $defaultRole = null
     ) {
         $this->setClient($client);
         $this->setServiceId($serviceId);
         $this->setCredentialHeaders($credentialsHeaders);
         $this->setUsePlanAsRole($usePlanAsRole);
+        $this->setDefaultRole($defaultRole);
+
+        if ($cache !== null) {
+            $this->setCache($cache);
+        }
     }
 
     /**
@@ -70,7 +92,7 @@ class ThreeScaleAdapter extends BaseAdapter implements
     /**
      * @param ThreeScaleClient $client
      */
-    public function setClient($client)
+    public function setClient(ThreeScaleClient $client)
     {
         $this->client = $client;
     }
@@ -89,22 +111,6 @@ class ThreeScaleAdapter extends BaseAdapter implements
     public function setServiceId($serviceId)
     {
         $this->serviceId = $serviceId;
-    }
-
-    /**
-     * @return boolean
-     */
-    public function usePlanAsRole()
-    {
-        return $this->usePlanAsRole;
-    }
-
-    /**
-     * @param boolean $usePlanAsRole
-     */
-    public function setUsePlanAsRole($usePlanAsRole)
-    {
-        $this->usePlanAsRole = $usePlanAsRole;
     }
 
     /**
@@ -149,23 +155,119 @@ class ThreeScaleAdapter extends BaseAdapter implements
     }
 
     /**
+     * @return CacheStorage
+     */
+    public function getCache()
+    {
+        return $this->cache;
+    }
+
+    /**
+     * @param CacheStorage $cache
+     */
+    public function setCache(CacheStorage $cache)
+    {
+//        if ($cache instanceof EventsCapableInterface) {
+//            $events = $cache->getEventManager();
+//
+//            // We are interested in the "hasItem.exception" and "getItem.exception" events...
+//        }
+
+        $this->cache = $cache;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function usePlanAsRole()
+    {
+        return $this->usePlanAsRole;
+    }
+
+    /**
+     * @param boolean $usePlanAsRole
+     */
+    public function setUsePlanAsRole($usePlanAsRole)
+    {
+        $this->usePlanAsRole = $usePlanAsRole;
+    }
+
+    /**
+     * @param string $defaultRole
+     */
+    public function setDefaultRole($defaultRole)
+    {
+        $this->defaultRole = $defaultRole;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDefaultRole()
+    {
+        return $this->defaultRole;
+    }
+
+    /**
      * @return Result
+     * @todo Use MvcEvent listener to log authentication in background (using an IronMQ queue)
      */
     protected function auth()
     {
-        $credentials = $this->getCredentials();
+        $cache = $this->getCache();
+        $cacheKey = $this->getCacheKey();
 
-        if ($credentials instanceof ResultInterface) {
-            return $credentials;
+        // The application might already be authenticated
+        if ($cache !== null && $cacheKey !== null && $cache->hasItem($cacheKey)) {
+            $identity = new Identity($cache->getItem($cacheKey));
+            return new Result(true, $identity);
         }
 
         $usage = array('hits' => 1);
+
+        // When credentials are missing, we're just returning an unsuccessful response
+        try {
+            $response = $this->authorize($usage);
+        } catch (Exception\CredentialMissingException $e) {
+            return new Result(false, null, array($e->getMessage()));
+        }
+
+        if (!$response->isSuccess()) {
+            return new Result(false, null, array($response->getErrorMessage()));
+        }
+
+        $role = $this->getAssignedRole($response);
+
+        if ($role === null) {
+            return new Result(false, null, array('No role assigned'));
+        }
+
+        $identity = new Identity($role);
+
+        if ($cache !== null && $cacheKey !== null) {
+            $cache->setItem($cacheKey, $role);
+        }
+
+        return new Result($response->isSuccess(), $identity);
+    }
+
+    /**
+     * Actually authorize by querying 3scale.
+     *
+     * @param array $usage
+     * @return \ThreeScaleResponse
+     */
+    protected function authorize(array $usage = null)
+    {
+        $appId = $this->getCredential(self::CREDENTIAL_APPLICATION_ID);
+        $appKey = $this->getCredential(self::CREDENTIAL_APPLICATION_KEY);
+
         $client = $this->getClient();
 
         try {
             $response = @$client->authorize(
-                $credentials[self::CREDENTIAL_APPLICATION_ID],
-                $credentials[self::CREDENTIAL_APPLICATION_KEY],
+                $appId,
+                $appKey,
                 $this->getServiceId(),
                 $usage
             );
@@ -189,32 +291,14 @@ class ThreeScaleAdapter extends BaseAdapter implements
             );
         }
 
-        /** @todo Use MvcEvent listener to log calls in background (using an IronMQ queue) */
-
-        $messages = array();
-        $plan = null;
-        $identity = null;
-
-        if (!$response->isSuccess()) {
-            $messages[(string) $response->getErrorCode()] = $response->getErrorMessage();
-        }
-
-        if ($response instanceof ThreeScaleAuthorizeResponse) {
-            $plan = $response->getPlan();
-
-            if ($this->usePlanAsRole()) {
-                $identity = new Identity('3scale-' . $plan);
-            }
-        }
-
-        /** @todo Actually authenticate */
-        return new Result($response->isSuccess(), $identity, $messages);
+        return $response;
     }
 
     /**
-     * @return array|Result
+     * @param string $name
+     * @return string
      */
-    protected function getCredentials()
+    protected function getCredential($name)
     {
         $request = $this->getRequest();
 
@@ -227,35 +311,53 @@ class ThreeScaleAdapter extends BaseAdapter implements
             );
         }
 
-        $appIdHeader  = $this->getCredentialHeader(self::CREDENTIAL_APPLICATION_ID);
-        $appKeyHeader = $this->getCredentialHeader(self::CREDENTIAL_APPLICATION_KEY);
+        $header  = $this->getCredentialHeader($name);
+        $credential  = $request->getHeader($header);
 
-        $appId  = $request->getHeader($appIdHeader);
-        $appKey = $request->getHeader($appKeyHeader);
-
-        $messages = array();
-
-        if (!$appId) {
-            $messages[] = sprintf(
-                'Missing application identifier; provide one using the "%s" header',
-                $appIdHeader
+        if (!$credential) {
+            throw new Exception\CredentialMissingException(
+                sprintf(
+                    'Missing authentication credential "%s"; provide it using the "%s" header',
+                    $name,
+                    $header
+                )
             );
         }
 
-        if (!$appKey) {
-            $messages[] = sprintf(
-                'Missing application key; provide one using the "%s" header',
-                $appKeyHeader
-            );
+        return $credential->getFieldValue();
+    }
+
+    /**
+     * @return string|null
+     */
+    protected function getCacheKey()
+    {
+        // Of course, we are using the application identifier as cache key.
+        try {
+            $appId = $this->getCredential(self::CREDENTIAL_APPLICATION_ID);
+        } catch (Exception\CredentialMissingException $e) {
+            $appId = null;
         }
 
-        if (count($messages) > 0) {
-            return new Result(false, null, $messages);
+        return $appId;
+    }
+
+    /**
+     * @param ThreeScaleResponse $response
+     * @return string
+     */
+    protected function getAssignedRole(ThreeScaleResponse $response)
+    {
+        $role = $this->getDefaultRole();
+
+        if ($response instanceof ThreeScaleAuthorizeResponse && $this->usePlanAsRole()) {
+            $plan = $response->getPlan();
+
+            if ($plan) {
+                $role = '3scale-' . $plan;
+            }
         }
 
-        return array(
-            self::CREDENTIAL_APPLICATION_ID  => $appId->getFieldValue(),
-            self::CREDENTIAL_APPLICATION_KEY => $appKey->getFieldValue(),
-        );
+        return $role;
     }
 }

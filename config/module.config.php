@@ -58,6 +58,7 @@ return array(
             'adapters' => array(
                 'Detail\Auth\Identity\Adapter\ThreeScaleAdapter' => array(
                     'client' => 'ThreeScaleClient',
+                    'cache' => null,
                     'app_id_header' => 'DWS-App-ID',
                     'app_key_header' => 'DWS-App-Key',
                 ),
