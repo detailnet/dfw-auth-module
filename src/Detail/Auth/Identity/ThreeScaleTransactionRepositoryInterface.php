@@ -22,7 +22,12 @@ interface ThreeScaleTransactionRepositoryInterface
     public function findAll();
 
     /**
-     * @param ThreeScaleTransactionInterface $transaction
+     * @param ThreeScaleTransactionInterface|ThreeScaleTransactionInterface[] $transactions
      */
-    public function add(ThreeScaleTransactionInterface $transaction);
+    public function add($transactions);
+
+    /**
+     * @param ThreeScaleTransactionInterface|ThreeScaleTransactionInterface[] $transactions
+     */
+    public function remove($transactions);
 }

@@ -136,9 +136,36 @@ class ThreeScaleController extends AbstractActionController
             } catch (Exception\RuntimeException $e) {
                 $this->writeConsoleLine(
                     sprintf(
-                        'Batch %d: Failed to report %d transaction(s): ' . $e->getMessage(),
+                        'Batch %d: Failed to report %d transaction(s): %s',
+                        $batchNumber,
+                        count($transactions),
+                        $e->getMessage()
+                    ),
+                    ConsoleColor::LIGHT_RED
+                );
+
+                // Don't delete the transactions of they're not reported...
+                continue;
+            }
+
+            try {
+                $transactionRepository->remove($transactions);
+                $this->writeConsoleLine(
+                    sprintf(
+                        'Batch %d: Deleted %d transaction(s)',
                         $batchNumber,
                         count($transactions)
+                    ),
+                    ConsoleColor::LIGHT_GREEN
+                );
+            } catch (\Exception $e) {
+                $this->writeConsoleLine(
+                    sprintf(
+                        'Batch %d: Failed to delete %d transaction(s): %s ' .
+                        '(Caution: These transactions will be reported again!)',
+                        $batchNumber,
+                        count($transactions),
+                        $e->getMessage()
                     ),
                     ConsoleColor::LIGHT_RED
                 );
