@@ -2,12 +2,14 @@
 
 namespace Detail\Auth;
 
+use Zend\Console\Adapter\AdapterInterface as Console;
 use Zend\Console\Request as ConsoleRequest;
 use Zend\Http\Request as HttpRequest;
 use Zend\Loader\AutoloaderFactory;
 use Zend\Loader\StandardAutoloader;
 use Zend\ModuleManager\Feature\AutoloaderProviderInterface;
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
+use Zend\ModuleManager\Feature\ConsoleUsageProviderInterface;
 use Zend\ModuleManager\Feature\ControllerProviderInterface;
 use Zend\ModuleManager\Feature\ServiceProviderInterface;
 use Zend\Mvc\MvcEvent;
@@ -152,5 +154,16 @@ class Module implements
     public function getServiceConfig()
     {
         return array();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getConsoleUsage(Console $console)
+    {
+        return array(
+            'Actions:',
+            'threescale report-transactions' => 'Report logged transactions to 3scale',
+        );
     }
 }

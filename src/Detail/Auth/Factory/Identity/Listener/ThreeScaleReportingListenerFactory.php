@@ -19,9 +19,9 @@ class ThreeScaleReportingListenerFactory implements
         /** @var \Detail\Auth\Options\ThreeScaleOptions $threeScaleOptions */
         $threeScaleOptions = $serviceLocator->get('Detail\Auth\Options\ThreeScaleOptions');
 
-        /** @var \Detail\Auth\Identity\ThreeScaleRequestRepositoryInterface $threeScaleRequestRepository */
-        $threeScaleRequestRepository = $serviceLocator->get($threeScaleOptions->getReporting()->getRepository());
+        /** @var \Detail\Auth\Identity\ThreeScaleTransactionRepositoryInterface $threeScaleTransactionRepository */
+        $threeScaleTransactionRepository = $serviceLocator->get($threeScaleOptions->getReporting()->getRepository());
 
-        return new Listener($threeScaleRequestRepository);
+        return new Listener($threeScaleTransactionRepository);
     }
 }

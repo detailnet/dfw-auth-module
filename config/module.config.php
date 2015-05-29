@@ -28,8 +28,26 @@ return array(
         ),
     ),
     'controllers' => array(
+        'factories' => array(
+            'Detail\Auth\Identity\Controller\ThreeScaleController' => 'Detail\Auth\Factory\Identity\Controller\ThreeScaleControllerFactory',
+        ),
         'initializers' => array(
             'Detail\Auth\Authorization\AuthorizationServiceInitializer',
+        ),
+    ),
+    'console' => array(
+        'router' => array(
+            'routes' => array(
+                'threescale.report-transactions' => array(
+                    'options' => array(
+                        'route'    => 'threescale report-transactions',
+                        'defaults' => array(
+                            'controller' => 'Detail\Auth\Identity\Controller\ThreeScaleController',
+                            'action'     => 'reportTransactions',
+                        ),
+                    ),
+                ),
+            ),
         ),
     ),
     'zfc_rbac' => array(
