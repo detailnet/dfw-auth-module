@@ -45,6 +45,7 @@ class ThreeScaleController extends AbstractActionController
     ) {
         $this->setRepository($repository);
         $this->setClient($client);
+        $this->setServiceId($serviceId);
     }
 
     /**
