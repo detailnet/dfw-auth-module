@@ -18,4 +18,9 @@ interface ResultInterface
      * @return array
      */
     public function getMessages();
+
+//    /**
+//     * @return Adapter\AdapterInterface
+//     */
+//    public function getAdapter();
 }

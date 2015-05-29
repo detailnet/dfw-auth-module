@@ -13,6 +13,7 @@ use Zend\ModuleManager\Feature\ServiceProviderInterface;
 use Zend\Mvc\MvcEvent;
 
 use Detail\Auth\Identity\Event;
+use Detail\Auth\Identity\ThreeScaleResult;
 use Detail\Auth\Service\HttpRequestAwareInterface;
 use Detail\Auth\Service\MvcEventAwareInterface;
 
@@ -30,11 +31,13 @@ class Module implements
 
     public function bootstrapAuth(MvcEvent $event)
     {
-        /** @var \Zend\ServiceManager\ServiceManager $serviceManager */
-        $serviceManager = $event->getApplication()->getServiceManager();
+        /** @var \Zend\ServiceManager\ServiceManager $services */
+        $services = $event->getApplication()->getServiceManager();
+
+        $mvcEvents = $event->getApplication()->getEventManager();
 
         /** @var \Detail\Auth\Identity\IdentityProvider $identityProvider */
-        $identityProvider = $serviceManager->get(__NAMESPACE__ . '\Identity\IdentityProvider');
+        $identityProvider = $services->get(__NAMESPACE__ . '\Identity\IdentityProvider');
 
         $request = $event->getRequest();
 
@@ -49,19 +52,37 @@ class Module implements
             }
         };
 
-        $injectMvcEvent = function(Event\IdentityEventInterface $identityEvent) use ($event) {
+        $injectMvcEvent = function(Event\IdentityEvent $identityEvent) use ($event) {
             if ($identityEvent instanceof MvcEventAwareInterface) {
                 $identityEvent->setMvcEvent($event);
             }
         };
 
-        // Make sure the MvcEvent object get's injected first (high priority)
+        $attachThreeScaleReportingListener = function(Event\IdentityAdapterEvent $identityEvent) use ($services, $mvcEvents) {
+            $result = $identityEvent->getParam($identityEvent::PARAM_RESULT);
+
+            if ($result instanceof ThreeScaleResult
+                && $result->hasUsage()
+                && $services->has('Detail\Auth\Identity\Listener\ThreeScaleReportingListener')
+            ) {
+                /** @var \Detail\Auth\Identity\Listener\ThreeScaleReportingListener $threeScaleReportingListener */
+                $threeScaleReportingListener = $services->get('Detail\Auth\Identity\Listener\ThreeScaleReportingListener');
+                $threeScaleReportingListener->setResult($result);
+
+                $mvcEvents->attachAggregate($threeScaleReportingListener);
+            }
+        };
+
+        // Make sure the MvcEvent object gets injected first (high priority)
         $events = $identityProvider->getEventManager();
         $events->attach(Event\IdentityProviderEvent::EVENT_PRE_AUTHENTICATE, $injectMvcEvent, 10000);
         $events->attach(Event\IdentityAdapterEvent::EVENT_PRE_AUTHENTICATE, $injectMvcEvent, 10000);
         $events->attach(Event\IdentityAdapterEvent::EVENT_PRE_AUTHENTICATE, $injectRequest, 9999);
         $events->attach(Event\IdentityAdapterEvent::EVENT_AUTHENTICATE, $injectMvcEvent, 10000);
         $events->attach(Event\IdentityProviderEvent::EVENT_AUTHENTICATE, $injectMvcEvent, 10000);
+
+        // We may need to log requests to 3scale, so the usage can be reported later
+        $events->attach(Event\IdentityAdapterEvent::EVENT_AUTHENTICATE, $attachThreeScaleReportingListener, 9999);
 
         if ($request instanceof ConsoleRequest) {
             /** @todo We should probably disable the authentication instead of using a test/dummy adapter... */

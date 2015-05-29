@@ -5,14 +5,14 @@ namespace Detail\Auth\Factory\Identity\Listener;
 use Zend\ServiceManager\FactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
-use Detail\Auth\Identity\Listener\RoutesListener;
+use Detail\Auth\Identity\Listener\RoutesListener as Listener;
 
 class RoutesListenerFactory implements
     FactoryInterface
 {
     /**
      * {@inheritDoc}
-     * @return RoutesListener
+     * @return Listener
      */
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
@@ -32,6 +32,6 @@ class RoutesListenerFactory implements
             }
         }
 
-        return new RoutesListener($routeRules);
+        return new Listener($routeRules);
     }
 }

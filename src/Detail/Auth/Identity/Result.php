@@ -20,16 +20,28 @@ class Result implements
      */
     protected $messages;
 
+//    /**
+//     * The adapter the result originated from.
+//     *
+//     * @var Adapter\AdapterInterface
+//     */
+//    protected $adapter;
+
     /**
      * @param boolean $valid
      * @param IdentityInterface $identity
      * @param array $messages
      */
-    public function __construct($valid, IdentityInterface $identity = null, array $messages = array())
-    {
+    public function __construct(
+        $valid,
+        IdentityInterface $identity = null,
+        array $messages = array()
+//        Adapter\AdapterInterface $adapter = null
+    ) {
         $this->valid = (bool) $valid;
         $this->identity = $identity;
         $this->messages = $messages;
+//        $this->adapter = $adapter;
     }
 
     /**
@@ -55,4 +67,12 @@ class Result implements
     {
         return $this->messages;
     }
+
+//    /**
+//     * @return Adapter\AdapterInterface
+//     */
+//    public function getAdapter()
+//    {
+//        return $this->adapter;
+//    }
 }
