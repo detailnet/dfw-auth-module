@@ -69,10 +69,14 @@ class Module implements
 
         // We may need to log requests to 3scale, so the usage can be reported later
         if ($threeScaleOptions->getReporting()->isEnabled()) {
-            $attachThreeScaleReportingListener = function(Event\IdentityAdapterEvent $identityEvent) use ($event, $services) {
+            $attached = false;
+
+            $attachThreeScaleReportingListener = function(Event\IdentityAdapterEvent $identityEvent) use ($event, $services, &$attached) {
                 $result = $identityEvent->getParam($identityEvent::PARAM_RESULT);
 
-                if ($result instanceof ThreeScaleResult
+                // Make sure the listener is only attached once
+                if (!$attached
+                    && $result instanceof ThreeScaleResult
                     && $result->hasUsage()
                     && $services->has('Detail\Auth\Identity\Listener\ThreeScaleReportingListener')
                 ) {
@@ -80,7 +84,10 @@ class Module implements
                     $threeScaleReportingListener = $services->get('Detail\Auth\Identity\Listener\ThreeScaleReportingListener');
                     $threeScaleReportingListener->setResult($result);
 
-                    $event->getApplication()->getEventManager()->attachAggregate($threeScaleReportingListener);
+                    $events = $event->getApplication()->getEventManager();
+                    $events->attachAggregate($threeScaleReportingListener);
+
+                    $attached = true;
                 }
             };
 
