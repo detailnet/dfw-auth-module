@@ -2,12 +2,16 @@
 
 namespace Detail\Auth\Identity\Listener;
 
+use DateTime;
+
 use Zend\EventManager\EventManagerInterface;
 use Zend\EventManager\ListenerAggregateInterface;
 use Zend\Http\PhpEnvironment\Request as HttpRequest;
+use Zend\Http\PhpEnvironment\Response as HttpResponse;
 use Zend\Mvc\MvcEvent;
 
 use Detail\Auth\Identity\ThreeScaleResult as Result;
+use Detail\Auth\Identity\ThreeScaleTransactionRepositoryInterface as TransactionRepository;
 
 class ThreeScaleReportingListener implements
     ListenerAggregateInterface
@@ -23,10 +27,20 @@ class ThreeScaleReportingListener implements
     protected $result;
 
     /**
-     * Attach events to the identity provider.
-     *
-     * This method attaches listeners to the authenticate.pre and authenticate
-     * events of Detail\Auth\Identity\IdentityProvider.
+     * @var TransactionRepository
+     */
+    protected $repository;
+
+    /**
+     * @param TransactionRepository $repository
+     */
+    public function __construct(TransactionRepository $repository)
+    {
+        $this->setRepository($repository);
+    }
+
+    /**
+     * Attach events.
      *
      * @param EventManagerInterface $events
      */
@@ -39,7 +53,7 @@ class ThreeScaleReportingListener implements
     }
 
     /**
-     * Detach events from the identity provider.
+     * Detach events.
      *
      * This method detaches listeners it has previously attached.
      *
@@ -61,12 +75,33 @@ class ThreeScaleReportingListener implements
      */
     public function onFinish(MvcEvent $event)
     {
+        $result = $this->getResult();
         $request = $event->getRequest();
-        $response = $event->getRequest();
 
-        if ($request instanceof HttpRequest) {
-//            var_dump($request, $response, $this->getResult());
+        // Only log successful request with usage
+        if (!$request instanceof HttpRequest
+            || !$result->isValid()
+            || !$result->hasUsage()
+        ) {
+            return;
         }
+
+        /** @var HttpResponse $response */
+        $response = $event->getResponse();
+
+        $transactionRepository = $this->getRepository();
+        $transaction = $transactionRepository->create(
+            array(
+                'app_id' => $result->getAppId(),
+                'received_on' => new DateTime(),
+                'usage' => $result->getUsage(),
+                'request' => $request->toString(),
+                'response' => $response->toString(),
+                'response_code' => $response->getStatusCode(),
+            )
+        );
+
+        $transactionRepository->add($transaction);
     }
 
     /**
@@ -83,5 +118,21 @@ class ThreeScaleReportingListener implements
     public function setResult(Result $result)
     {
         $this->result = $result;
+    }
+
+    /**
+     * @return TransactionRepository
+     */
+    public function getRepository()
+    {
+        return $this->repository;
+    }
+
+    /**
+     * @param TransactionRepository $repository
+     */
+    public function setRepository(TransactionRepository $repository)
+    {
+        $this->repository = $repository;
     }
 }

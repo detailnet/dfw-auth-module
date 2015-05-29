@@ -16,9 +16,12 @@ class ThreeScaleReportingListenerFactory implements
      */
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
-//        /** @var \Detail\Auth\Options\ModuleOptions $moduleOptions */
-//        $moduleOptions = $serviceLocator->get('Detail\Auth\Options\ModuleOptions');
+        /** @var \Detail\Auth\Options\ThreeScaleOptions $threeScaleOptions */
+        $threeScaleOptions = $serviceLocator->get('Detail\Auth\Options\ThreeScaleOptions');
 
-        return new Listener();
+        /** @var \Detail\Auth\Identity\ThreeScaleRequestRepositoryInterface $threeScaleRequestRepository */
+        $threeScaleRequestRepository = $serviceLocator->get($threeScaleOptions->getReporting()->getRepository());
+
+        return new Listener($threeScaleRequestRepository);
     }
 }
