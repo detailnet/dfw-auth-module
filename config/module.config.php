@@ -15,6 +15,7 @@ return array(
             'Detail\Auth\Identity\AdapterManager' => 'Detail\Auth\Factory\Identity\AdapterManagerFactory',
             'Detail\Auth\Identity\IdentityProvider' => 'Detail\Auth\Factory\Identity\IdentityProviderFactory',
             'Detail\Auth\Identity\Listener\RoutesListener' => 'Detail\Auth\Factory\Identity\Listener\RoutesListenerFactory',
+            'Detail\Auth\Identity\Listener\ThreeScaleReportingListener' => 'Detail\Auth\Factory\Identity\Listener\ThreeScaleReportingListenerFactory',
             'Detail\Auth\Options\ModuleOptions' => 'Detail\Auth\Factory\Options\ModuleOptionsFactory',
             'Detail\Auth\Options\ThreeScaleOptions' => 'Detail\Auth\Factory\Options\ThreeScaleOptionsFactory',
             'ThreeScaleClient' => 'Detail\Auth\Factory\ThreeScale\ThreeScaleClientFactory',
@@ -27,8 +28,26 @@ return array(
         ),
     ),
     'controllers' => array(
+        'factories' => array(
+            'Detail\Auth\Identity\Controller\ThreeScaleController' => 'Detail\Auth\Factory\Identity\Controller\ThreeScaleControllerFactory',
+        ),
         'initializers' => array(
             'Detail\Auth\Authorization\AuthorizationServiceInitializer',
+        ),
+    ),
+    'console' => array(
+        'router' => array(
+            'routes' => array(
+                'threescale.report-transactions' => array(
+                    'options' => array(
+                        'route'    => 'threescale report-transactions',
+                        'defaults' => array(
+                            'controller' => 'Detail\Auth\Identity\Controller\ThreeScaleController',
+                            'action'     => 'reportTransactions',
+                        ),
+                    ),
+                ),
+            ),
         ),
     ),
     'zfc_rbac' => array(

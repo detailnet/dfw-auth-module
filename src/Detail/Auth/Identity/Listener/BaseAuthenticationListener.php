@@ -21,26 +21,26 @@ abstract class BaseAuthenticationListener implements
      * This method attaches listeners to the authenticate.pre and authenticate
      * events of Detail\Auth\Identity\IdentityProvider.
      *
-     * @param EventManagerInterface $eventManager
+     * @param EventManagerInterface $events
      */
-    public function attach(EventManagerInterface $eventManager)
+    public function attach(EventManagerInterface $events)
     {
-        $this->listeners[] = $eventManager->attach(
+        $this->listeners[] = $events->attach(
             Event\IdentityProviderEvent::EVENT_PRE_AUTHENTICATE,
             array($this, 'onPreAuthenticate')
         );
 
-        $this->listeners[] = $eventManager->attach(
+        $this->listeners[] = $events->attach(
             Event\IdentityProviderEvent::EVENT_AUTHENTICATE,
             array($this, 'onAuthenticate')
         );
 
-        $this->listeners[] = $eventManager->attach(
+        $this->listeners[] = $events->attach(
             Event\IdentityAdapterEvent::EVENT_PRE_AUTHENTICATE,
             array($this, 'onAdapterPreAuthenticate')
         );
 
-        $this->listeners[] = $eventManager->attach(
+        $this->listeners[] = $events->attach(
             Event\IdentityAdapterEvent::EVENT_AUTHENTICATE,
             array($this, 'onAdapterAuthenticate')
         );
@@ -51,12 +51,12 @@ abstract class BaseAuthenticationListener implements
      *
      * This method detaches listeners it has previously attached.
      *
-     * @param EventManagerInterface $eventManager
+     * @param EventManagerInterface $events
      */
-    public function detach(EventManagerInterface $eventManager)
+    public function detach(EventManagerInterface $events)
     {
         foreach ($this->listeners as $index => $listener) {
-            if ($eventManager->detach($listener)) {
+            if ($events->detach($listener)) {
                 unset($listener[$index]);
             }
         }

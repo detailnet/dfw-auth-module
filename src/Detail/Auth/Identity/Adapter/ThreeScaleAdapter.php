@@ -12,7 +12,7 @@ use ThreeScaleServerError;
 
 use Detail\Auth\Identity\Exception;
 use Detail\Auth\Identity\Identity;
-use Detail\Auth\Identity\Result;
+use Detail\Auth\Identity\ThreeScaleResult as Result;
 use Detail\Auth\Service\HttpRequestAwareInterface;
 use Detail\Auth\Service\HttpRequestAwareTrait;
 
@@ -53,6 +53,13 @@ class ThreeScaleAdapter extends BaseAdapter implements
      * @var string
      */
     protected $defaultRole;
+
+    /**
+     * @var array
+     */
+    protected $usage = array(
+        'hits' => 1,
+    );
 
     /**
      * @param ThreeScaleClient $client
@@ -220,26 +227,25 @@ class ThreeScaleAdapter extends BaseAdapter implements
         // The application might already be authenticated
         if ($cache !== null && $cacheKey !== null && $cache->hasItem($cacheKey)) {
             $identity = new Identity($cache->getItem($cacheKey));
-            return new Result(true, $identity);
+            return $this->createResult(true, $identity);
         }
-
-        $usage = array('hits' => 1);
 
         // When credentials are missing, we're just returning an unsuccessful response
         try {
-            $response = $this->authorize($usage);
+            $response = $this->authorize($this->getUsage());
         } catch (Exception\CredentialMissingException $e) {
-            return new Result(false, null, array($e->getMessage()));
+            // Don't report usage when credentials are missing
+            return $this->createResult(false, null, array($e->getMessage()), false);
         }
 
         if (!$response->isSuccess()) {
-            return new Result(false, null, array($response->getErrorMessage()));
+            return $this->createResult(false, null, array($response->getErrorMessage()));
         }
 
         $role = $this->getAssignedRole($response);
 
         if ($role === null) {
-            return new Result(false, null, array('No role assigned'));
+            return $this->createResult(false, null, array('No role assigned'));
         }
 
         $identity = new Identity($role);
@@ -248,7 +254,7 @@ class ThreeScaleAdapter extends BaseAdapter implements
             $cache->setItem($cacheKey, $role);
         }
 
-        return new Result($response->isSuccess(), $identity);
+        return $this->createResult($response->isSuccess(), $identity);
     }
 
     /**
@@ -369,5 +375,33 @@ class ThreeScaleAdapter extends BaseAdapter implements
         }
 
         return $role;
+    }
+
+    /**
+     * @return array
+     */
+    protected function getUsage()
+    {
+        return $this->usage;
+    }
+
+    /**
+     * @param boolean $success
+     * @param Identity|null $identity
+     * @param array $messages
+     * @param bool $withUsage
+     * @return Result
+     */
+    private function createResult(
+        $success,
+        $identity = null,
+        array $messages = array(),
+        $withUsage = true
+    ) {
+        $usage  = $withUsage ? $this->getUsage() : null;
+        $appId  = $withUsage ? $this->getCredential(self::CREDENTIAL_APPLICATION_ID) : null;
+        $appKey = $withUsage ? $this->getCredential(self::CREDENTIAL_APPLICATION_KEY) : null;
+
+        return new Result($success, $identity, $messages, $usage, $appId, $appKey);
     }
 }

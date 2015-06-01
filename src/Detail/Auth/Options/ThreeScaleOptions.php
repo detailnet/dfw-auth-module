@@ -17,6 +17,11 @@ class ThreeScaleOptions extends AbstractOptions
     protected $serviceId;
 
     /**
+     * @var ThreeScaleReportingOptions
+     */
+    protected $reporting;
+
+    /**
      * @return string
      */
     public function getProviderKey()
@@ -46,5 +51,25 @@ class ThreeScaleOptions extends AbstractOptions
     public function setServiceId($serviceId)
     {
         $this->serviceId = $serviceId;
+    }
+
+    /**
+     * @return ThreeScaleReportingOptions
+     */
+    public function getReporting()
+    {
+        if ($this->reporting === null) {
+            $this->reporting = new ThreeScaleReportingOptions();
+        }
+
+        return $this->reporting;
+    }
+
+    /**
+     * @param array $reporting
+     */
+    public function setReporting(array $reporting)
+    {
+        $this->getReporting()->setFromArray($reporting);
     }
 }

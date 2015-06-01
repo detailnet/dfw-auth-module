@@ -25,8 +25,11 @@ class Result implements
      * @param IdentityInterface $identity
      * @param array $messages
      */
-    public function __construct($valid, IdentityInterface $identity = null, array $messages = array())
-    {
+    public function __construct(
+        $valid,
+        IdentityInterface $identity = null,
+        array $messages = array()
+    ) {
         $this->valid = (bool) $valid;
         $this->identity = $identity;
         $this->messages = $messages;
