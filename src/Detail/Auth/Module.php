@@ -73,7 +73,7 @@ class Module implements
         if ($threeScaleOptions->getReporting()->isEnabled()) {
             $attached = false;
 
-            $attachThreeScaleReportingListener = function(Event\IdentityAdapterEvent $identityEvent) use ($event, $services, &$attached) {
+            $attachReportingListener = function(Event\IdentityAdapterEvent $identityEvent) use ($event, $services, &$attached) {
                 $result = $identityEvent->getParam($identityEvent::PARAM_RESULT);
 
                 // Make sure the listener is only attached once
@@ -82,18 +82,18 @@ class Module implements
                     && $result->hasUsage()
                     && $services->has('Detail\Auth\Identity\Listener\ThreeScaleReportingListener')
                 ) {
-                    /** @var \Detail\Auth\Identity\Listener\ThreeScaleReportingListener $threeScaleReportingListener */
-                    $threeScaleReportingListener = $services->get('Detail\Auth\Identity\Listener\ThreeScaleReportingListener');
-                    $threeScaleReportingListener->setResult($result);
+                    /** @var \Detail\Auth\Identity\Listener\ThreeScaleReportingListener $reportingListener */
+                    $reportingListener = $services->get('Detail\Auth\Identity\Listener\ThreeScaleReportingListener');
+                    $reportingListener->setResult($result);
 
                     $events = $event->getApplication()->getEventManager();
-                    $events->attachAggregate($threeScaleReportingListener);
+                    $events->attachAggregate($reportingListener);
 
                     $attached = true;
                 }
             };
 
-            $events->attach(Event\IdentityAdapterEvent::EVENT_AUTHENTICATE, $attachThreeScaleReportingListener, 9999);
+            $events->attach(Event\IdentityAdapterEvent::EVENT_AUTHENTICATE, $attachReportingListener, 9999);
         }
 
         if ($request instanceof ConsoleRequest) {
