@@ -2,16 +2,20 @@
 
 namespace Detail\Auth\Identity\Controller;
 
+use ArrayObject;
+
 use Zend\Console\Request as ConsoleRequest;
 use Zend\Console\Adapter\AdapterInterface as Console;
 use Zend\Console\ColorInterface as ConsoleColor;
+use Zend\EventManager\EventManager;
+use Zend\EventManager\EventManagerInterface;
 use Zend\Mvc\Controller\AbstractActionController;
 //use Zend\View\Model\ConsoleModel;
 
 use ThreeScaleClient;
-use ThreeScaleResponse;
 use ThreeScaleServerError;
 
+use Detail\Auth\Identity\Event;
 use Detail\Auth\Identity\Exception;
 use Detail\Auth\Identity\ThreeScaleTransactionInterface as Transaction;
 use Detail\Auth\Identity\ThreeScaleTransactionRepositoryInterface as TransactionRepository;
@@ -32,6 +36,11 @@ class ThreeScaleController extends AbstractActionController
      * @var string
      */
     protected $serviceId;
+
+    /**
+     * @var EventManagerInterface
+     */
+    protected $threeScaleEvents;
 
     /**
      * @param TransactionRepository $repository
@@ -97,6 +106,39 @@ class ThreeScaleController extends AbstractActionController
     }
 
     /**
+     * Retrieve the event manager instance.
+     *
+     * Lazy-initializes one if none present.
+     *
+     * @return EventManagerInterface
+     */
+    public function getThreeScaleEventManager()
+    {
+        if (!$this->threeScaleEvents) {
+            $this->setThreeScaleEventManager(new EventManager());
+        }
+
+        return $this->threeScaleEvents;
+    }
+
+    /**
+     * Set the event manager instance.
+     *
+     * @param EventManagerInterface $events
+     */
+    public function setThreeScaleEventManager(EventManagerInterface $events)
+    {
+        $events->setIdentifiers(
+            array(
+                __CLASS__,
+                get_class($this),
+            )
+        );
+
+        $this->threeScaleEvents = $events;
+    }
+
+    /**
      * @return void
      */
     public function reportTransactionsAction()
@@ -113,8 +155,6 @@ class ThreeScaleController extends AbstractActionController
             $batches[$batchNumber][] = $transaction;
         }
 
-        /** @todo Log output to application log */
-
         $this->writeConsoleLine(
             sprintf(
                 'Reporting %d transaction(s) in %d batch(es)',
@@ -123,54 +163,76 @@ class ThreeScaleController extends AbstractActionController
             )
         );
 
+        $events = $this->getThreeScaleEventManager();
+
         foreach ($batches as $batchNumber => $transactions) {
             try {
-                $this->reportTransactions($transactions);
-                $this->writeConsoleLine(
-                    sprintf(
-                        'Batch %d: Reported %d transaction(s)',
-                        $batchNumber,
-                        count($transactions)
-                    ),
-                    ConsoleColor::LIGHT_GREEN
-                );
-            } catch (Exception\RuntimeException $e) {
-                $this->writeConsoleLine(
-                    sprintf(
-                        'Batch %d: Failed to report %d transaction(s): %s',
-                        $batchNumber,
-                        count($transactions),
-                        $e->getMessage()
-                    ),
-                    ConsoleColor::LIGHT_RED
+                $success = true;
+                $message = sprintf(
+                    'Batch %d: Reported %d transaction(s)',
+                    $batchNumber,
+                    count($transactions)
                 );
 
+                $this->reportTransactions($transactions);
+                $this->writeConsoleLine($message, ConsoleColor::LIGHT_GREEN);
+            } catch (Exception\RuntimeException $e) {
+                $success = false;
+                $message = sprintf(
+                    'Batch %d: Failed to report %d transaction(s): %s (skipping deletion)',
+                    $batchNumber,
+                    count($transactions),
+                    $e->getMessage()
+                );
+
+                $this->writeConsoleLine($message, ConsoleColor::LIGHT_RED);
+            }
+
+            $events->trigger(
+                $this->prepareEvent(
+                    Event\ThreeScaleEvent::EVENT_REPORT_TRANSACTIONS,
+                    $transactions,
+                    $message,
+                    $success
+                )
+            );
+
+            if (!$success) {
                 // Don't delete the transactions of they're not reported...
                 continue;
             }
 
             try {
+                $success = true;
+                $message = sprintf(
+                    'Batch %d: Deleted %d transaction(s)',
+                    $batchNumber,
+                    count($transactions)
+                );
+
                 $transactionRepository->remove($transactions);
-                $this->writeConsoleLine(
-                    sprintf(
-                        'Batch %d: Deleted %d transaction(s)',
-                        $batchNumber,
-                        count($transactions)
-                    ),
-                    ConsoleColor::LIGHT_GREEN
-                );
+                $this->writeConsoleLine($message, ConsoleColor::LIGHT_GREEN);
             } catch (\Exception $e) {
-                $this->writeConsoleLine(
-                    sprintf(
-                        'Batch %d: Failed to delete %d transaction(s): %s ' .
-                        '(Caution: These transactions will be reported again!)',
-                        $batchNumber,
-                        count($transactions),
-                        $e->getMessage()
-                    ),
-                    ConsoleColor::LIGHT_RED
+                $success = false;
+                $message = sprintf(
+                    'Batch %d: Failed to delete %d transaction(s): %s ' .
+                    '(Caution: These transactions will be reported again!)',
+                    $batchNumber,
+                    count($transactions),
+                    $e->getMessage()
                 );
+
+                $this->writeConsoleLine($message, ConsoleColor::LIGHT_RED);
             }
+
+            $events->trigger(
+                $this->prepareEvent(
+                    Event\ThreeScaleEvent::EVENT_DELETE_TRANSACTIONS,
+                    $transactions,
+                    $message,
+                    $success
+                )
+            );
         }
     }
 
@@ -262,5 +324,43 @@ class ThreeScaleController extends AbstractActionController
 //        if ($isVerbose) {
             $console->writeLine($message, $color);
 //        }
+    }
+
+    /**
+     * @param string $name
+     * @param array $transactions
+     * @param string|null $message
+     * @param bool $success
+     * @return Event\ThreeScaleEvent
+     */
+    protected function prepareEvent($name, array $transactions, $message = null, $success = true)
+    {
+        $eventParams = array(
+            Event\ThreeScaleEvent::PARAM_TRANSACTIONS => $transactions,
+            Event\ThreeScaleEvent::PARAM_MESSAGE      => $message,
+            Event\ThreeScaleEvent::PARAM_SUCCESS      => $success,
+        );
+
+        $event = new Event\ThreeScaleEvent($name, $this, $this->prepareEventParams($eventParams));
+
+        return $event;
+    }
+
+    /**
+     * Prepare event parameters.
+     *
+     * Ensures event parameters are created as an array object, allowing them to be modified
+     * by listeners and retrieved.
+     *
+     * @param array $params
+     * @return ArrayObject
+     */
+    protected function prepareEventParams(array $params)
+    {
+        if (empty($params)) {
+            return $params;
+        }
+
+        return $this->getEventManager()->prepareArgs($params);
     }
 }

@@ -136,7 +136,7 @@ class IdentityProvider implements
             array(
                 __CLASS__,
                 get_class($this),
-                __NAMESPACE__ . '\IdentityProviderInterface'
+                __NAMESPACE__ . '\IdentityProviderInterface',
             )
         );
 
