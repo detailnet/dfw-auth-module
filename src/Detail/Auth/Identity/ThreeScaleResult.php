@@ -31,7 +31,6 @@ class ThreeScaleResult extends Result
         $valid,
         IdentityInterface $identity = null,
         array $messages = array(),
-//        Adapter\AdapterInterface $adapter = null,
         $usage = null,
         $appId = null,
         $appKey = null

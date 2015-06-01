@@ -48,7 +48,8 @@ class ThreeScaleReportingListener implements
     {
         $this->listeners[] = $events->attach(
             MvcEvent::EVENT_FINISH,
-            array($this, 'onFinish'), -10000 // We want to be late/last
+            array($this, 'onFinish'),
+            -10000 // We want to be late/last
         );
     }
 
