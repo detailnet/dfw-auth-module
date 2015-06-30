@@ -35,4 +35,9 @@ interface ThreeScaleTransactionInterface
      * @return int
      */
     public function getResponseCode();
+
+    /**
+     * @return int
+     */
+    public function estimateSize();
 }

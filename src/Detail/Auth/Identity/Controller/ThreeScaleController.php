@@ -146,13 +146,51 @@ class ThreeScaleController extends AbstractActionController
         $transactionRepository = $this->getRepository();
         $transactions = $transactionRepository->findAll();
 
-        $batches = array();
-
         // 3scale allows up to 1000 transactions to be reported in a single request.
-        // We're splitting our list of transactions in respective batches.
-        foreach ($transactions as $i => $transaction) {
-            $batchNumber = (int) ceil(($i + 1) / 1000);
-            $batches[$batchNumber][] = $transaction;
+        $maxBatchLength = 1000;
+
+        // 3scale seems to limit the request body size to 1 MB (nginx's default).
+        // When the body exceeds this limit, a 413 error (Request Entity Too Large) is returned.
+        // We have to make sure, we're not reporting too many (big) transactions at once...
+        $maxBatchBodySize = (1000 * 1000) - 2000; // 2000 bytes/chars margin to account for other params...
+
+        $batches = array();
+        $batchNumber = 0;
+
+        $skippedTransactions = array();
+        $unbatchedTransactions = $transactions;
+
+        // We're splitting our list of transactions in respective batches (considering the above limits).
+        while (count($unbatchedTransactions) > 0) {
+            $batchNumber += 1;
+            $batchLength = 0;
+            $batchBodySize = 0;
+
+            foreach ($unbatchedTransactions as $i => $transaction) {
+                $transactionSize = $transaction->estimateSize();
+
+                // When a single transaction already exceeds the maximum batch size...
+                if ($transactionSize > $maxBatchBodySize) {
+                    // ...just skip it (will be skipped in all future runs as well, until a human intervenes...)
+                    $skippedTransactions[] = $transaction;
+                    unset($unbatchedTransactions[$i]);
+                    continue;
+                }
+
+                // When the maximum batch length or maximum batch size are be reached...
+                if ($batchLength >= $maxBatchLength
+                    || ($batchBodySize + $transactionSize) > $maxBatchBodySize
+                ) {
+                    // ...continue with the next batch
+                    break;
+                }
+
+                $batchLength += 1;
+                $batchBodySize += $transactionSize;
+
+                $batches[$batchNumber][] = $transaction;
+                unset($unbatchedTransactions[$i]);
+            }
         }
 
         $this->writeConsoleLine(
@@ -231,6 +269,25 @@ class ThreeScaleController extends AbstractActionController
                     $transactions,
                     $message,
                     $success
+                )
+            );
+        }
+
+        if (count($skippedTransactions) > 0) {
+            $message = sprintf(
+                'Skipped reporting of %d transaction(s) because they exceed the maximum allowed size of %s bytes',
+                count($transactions),
+                $maxBatchBodySize
+            );
+
+            $this->writeConsoleLine($message, ConsoleColor::LIGHT_YELLOW);
+
+            $events->trigger(
+                $this->prepareEvent(
+                    Event\ThreeScaleEvent::EVENT_SKIP_TRANSACTIONS,
+                    $skippedTransactions,
+                    $message,
+                    false
                 )
             );
         }
