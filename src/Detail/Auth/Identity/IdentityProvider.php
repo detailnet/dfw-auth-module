@@ -179,7 +179,7 @@ class IdentityProvider implements
         $events = $this->getEventManager();
 
         $preEvent = $this->prepareEvent(Event\IdentityProviderEvent::EVENT_PRE_AUTHENTICATE, $preEventParams);
-        $eventResults = $events->triggerUntil($preEvent, function ($result) {
+        $eventResults = $events->trigger($preEvent, function ($result) {
             /** @todo Give listeners the opportunity to provide an identity (in which case we wouldn't continue with authentication) */
             // Stop the execution when a listeners returns false
             return ($result === false);

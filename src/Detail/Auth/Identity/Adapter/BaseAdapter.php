@@ -90,7 +90,7 @@ abstract class BaseAdapter implements
         $events = $this->getEventManager();
 
         $preEvent = $this->prepareEvent(Event\IdentityAdapterEvent::EVENT_PRE_AUTHENTICATE, $preEventParams);
-        $eventResults = $events->triggerUntil($preEvent, function ($result) {
+        $eventResults = $events->trigger($preEvent, function ($result) {
             // Stop the execution when a listeners returns false
             return ($result === false);
         });
