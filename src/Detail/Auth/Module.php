@@ -22,6 +22,7 @@ use Detail\Auth\Service\MvcEventAwareInterface;
 class Module implements
     AutoloaderProviderInterface,
     ConfigProviderInterface,
+    ConsoleUsageProviderInterface,
     ControllerProviderInterface,
     ServiceProviderInterface
 {

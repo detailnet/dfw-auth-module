@@ -28,9 +28,8 @@
         "zendframework/zend-navigation": "2.*",
         "zendframework/zend-servicemanager": "2.*",
         "zendframework/zend-stdlib": "2.*",
-        "detailnet/dfw-core": "~0.1.1",
-        "detailnet/dfw-log": "~0.2.0",
-        "detailnet/dfw-log-module": "~0.2.0"
+        "detailnet/dfw-core": "~0.2",
+        "detailnet/dfw-log": "~0.2.0"
     },
     "require-dev": {
         "phpunit/phpunit": "~4.4.5",
