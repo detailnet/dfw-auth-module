@@ -29,7 +29,17 @@ interface ThreeScaleTransactionInterface
     /**
      * @return string
      */
+    public function getRequestForReporting();
+
+    /**
+     * @return string
+     */
     public function getResponse();
+
+    /**
+     * @return string
+     */
+    public function getResponseForReporting();
 
     /**
      * @return int
@@ -40,4 +50,10 @@ interface ThreeScaleTransactionInterface
      * @return int
      */
     public function estimateSize();
+
+    /**
+     * @param int $threshold
+     * @return int
+     */
+    public function prepareForReporting($threshold);
 }
