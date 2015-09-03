@@ -240,7 +240,7 @@ class ThreeScaleController extends AbstractActionController
      * 3scale seems to limit the request body size to 1 MB (nginx's default).
      * When the body exceeds this limit, a 413 error (Request Entity Too Large) is returned.
      * We have to make sure, we're not reporting too many (big) transactions at once...
-     * We're adding 2000 bytes/chars margin to account for other params...
+     * We're adding 100000 bytes/chars margin to account for other params...
      *
      * @param Transaction[] $transactions
      * @param int $maxBatchLength
@@ -250,7 +250,7 @@ class ThreeScaleController extends AbstractActionController
     protected function splitTransactionsIntoBatches(
         array $transactions,
         $maxBatchLength = 1000,
-        $maxBatchBodySize = 998000
+        $maxBatchBodySize = 900000
     ) {
         $batches = array();
         $batchNumber = 0;
