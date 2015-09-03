@@ -2,6 +2,8 @@
 
 namespace Detail\Auth\Identity\Adapter;
 
+use CurlResponse;
+
 use Zend\Cache\Storage\StorageInterface as CacheStorage;
 //use Zend\EventManager\EventsCapableInterface;
 
@@ -278,10 +280,25 @@ class ThreeScaleAdapter extends BaseAdapter implements
                 $usage
             );
         } catch (ThreeScaleServerError $e) {
+            $message = $e->getMessage();
+
+            // The 3scale client declares everything other than HTTP response codes 400-404 as "server error"...
+            // Let's see if we can get a little more information...
+            if (isset($e->response) && $e->response instanceof CurlResponse) {
+                /** @var CurlResponse $response */
+                $response  = $e->response;
+
+                if (isset($response->headers['Status'])) {
+                    $message = $response->headers['Status'];
+                } elseif (isset($response->headers['Status-Code'])) {
+                    $message = sprintf('Unknown error (code %s)', $response->headers['Status-Code']);
+                }
+            }
+
             throw new Exception\AuthenticationUnavailableException(
                 sprintf(
-                    'Failed to authenticate because 3scale seems to be unavailable: %s',
-                    $e->getMessage()
+                    'Failed to authenticate because of a 3scale error: %s',
+                    $message
                 ),
                 0,
                 $e

@@ -3,6 +3,7 @@
 namespace Detail\Auth\Identity\Controller;
 
 use ArrayObject;
+use CurlResponse;
 
 use Zend\Console\Request as ConsoleRequest;
 use Zend\Console\Adapter\AdapterInterface as Console;
@@ -343,25 +344,34 @@ class ThreeScaleController extends AbstractActionController
         }
 
         try {
-            $response = @$client->report(
+            $response = $client->report(
                 $transactionData,
                 $this->getServiceId()
             );
         } catch (ThreeScaleServerError $e) {
+            $message = $e->getMessage();
+
+            // The 3scale client declares everything other than HTTP response codes 400-404 as "server error"...
+            // Let's see if we can get a little more information...
+            if (isset($e->response) && $e->response instanceof CurlResponse) {
+                /** @var CurlResponse $response */
+                $response  = $e->response;
+
+                if (isset($response->headers['Status'])) {
+                    $message = $response->headers['Status'];
+                } elseif (isset($response->headers['Status-Code'])) {
+                    $message = sprintf('Unknown error (code %s)', $response->headers['Status-Code']);
+                }
+            }
+
             throw new Exception\RuntimeException(
-                sprintf(
-                    '3scale seems to be unavailable: %s',
-                    $e->getMessage()
-                ),
+                sprintf('3scale error: %s', $message),
                 0,
                 $e
             );
         } catch (\Exception $e) {
             throw new Exception\RuntimeException(
-                sprintf(
-                    'Error: %s',
-                    $e->getMessage()
-                ),
+                sprintf('Error: %s', $e->getMessage()),
                 0,
                 $e
             );
