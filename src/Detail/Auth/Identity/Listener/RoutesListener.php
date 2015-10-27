@@ -91,7 +91,15 @@ class RoutesListener extends BaseAuthenticationListener
             throw new Exception\RuntimeException('Event is missing MvcEvent object');
         }
 
-        $matchedRouteName = $mvcEvent->getRouteMatch()->getMatchedRouteName();
+        $matchedRoute = $mvcEvent->getRouteMatch();
+
+        // If there are rules but we can't determine the route,
+        // we need to stop the authentication by this adapter.
+        if ($matchedRoute === null) {
+            return false;
+        }
+
+        $matchedRouteName = $matchedRoute->getMatchedRouteName();
         $matchedRouteRule = null;
 
         foreach ($enabledRoutes as $routeRule) {
