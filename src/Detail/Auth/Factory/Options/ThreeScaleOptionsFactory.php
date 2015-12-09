@@ -19,7 +19,7 @@ class ThreeScaleOptionsFactory implements FactoryInterface
         $config = $serviceLocator->get('Config');
 
         if (!isset($config['3scale'])) {
-            throw new ConfigException('Config for 3scale is not set');
+            return new ThreeScaleOptions();
         }
 
         $threeScaleConfig = $config['3scale'];

@@ -15,6 +15,7 @@ use Zend\ModuleManager\Feature\ServiceProviderInterface;
 use Zend\Mvc\MvcEvent;
 
 use Detail\Auth\Identity\Event;
+use Detail\Auth\Identity\IdentityProvider;
 use Detail\Auth\Identity\ThreeScaleResult;
 use Detail\Auth\Service\HttpRequestAwareInterface;
 use Detail\Auth\Service\MvcEventAwareInterface;
@@ -37,8 +38,8 @@ class Module implements
         /** @var \Zend\ServiceManager\ServiceManager $services */
         $services = $event->getApplication()->getServiceManager();
 
-        /** @var \Detail\Auth\Identity\IdentityProvider $identityProvider */
-        $identityProvider = $services->get(__NAMESPACE__ . '\Identity\IdentityProvider');
+        /** @var IdentityProvider $identityProvider */
+        $identityProvider = $services->get(IdentityProvider::CLASS);
 
         $request = $event->getRequest();
 
