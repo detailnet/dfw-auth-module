@@ -5,11 +5,11 @@ namespace Detail\Auth\Factory\Identity\Adapter;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
 use Detail\Auth\Exception\ConfigException;
-use Detail\Auth\Identity\Adapter\ThreeScaleAdapter as Adapter;
-use Detail\Auth\Options\Identity\Adapter\ThreeScaleAdapterOptions as AdapterOptions;
+use Detail\Auth\Identity\Adapter\AuthenticationAdapterAdapter as Adapter;
+use Detail\Auth\Options\Identity\Adapter\AuthenticationAdapterAdapterOptions as AdapterOptions;
 use Detail\Auth\Options\Identity\IdentityOptions;
 
-class ThreeScaleAdapterFactory extends BaseAdapterFactory
+class AuthenticationAdapterAdapterFactory extends BaseAdapterFactory
 {
     /**
      * @param ServiceLocatorInterface $serviceLocator
@@ -26,17 +26,14 @@ class ThreeScaleAdapterFactory extends BaseAdapterFactory
             AdapterOptions::CLASS
         );
 
-        /** @var \Detail\Auth\Options\ThreeScaleOptions $threeScaleOptions */
-        $threeScaleOptions = $serviceLocator->get('Detail\Auth\Options\ThreeScaleOptions');
+        $authenticationAdapterClass = $adapterOptions->getAuthenticationAdapter();
 
-        $clientClass = $adapterOptions->getClient();
-
-        if (!$clientClass) {
-            throw new ConfigException('Missing 3scale client class');
+        if (!$authenticationAdapterClass) {
+            throw new ConfigException('Missing authentication adapter class');
         }
 
-        /** @var \ThreeScaleClient $client */
-        $client = $serviceLocator->get($clientClass);
+        /** @var \Zend\Authentication\Adapter\ValidatableAdapterInterface $authenticationAdapter */
+        $authenticationAdapter = $serviceLocator->get($authenticationAdapterClass);
 
         $credentialHeaders = array(
             Adapter::CREDENTIAL_APPLICATION_ID  => $adapterOptions->getAppIdHeader(),
@@ -44,8 +41,7 @@ class ThreeScaleAdapterFactory extends BaseAdapterFactory
         );
 
         $adapter = new Adapter(
-            $client,
-            $threeScaleOptions->getServiceId(),
+            $authenticationAdapter,
             $credentialHeaders,
             $this->getCache($serviceLocator, $adapterOptions->getCache())
         );

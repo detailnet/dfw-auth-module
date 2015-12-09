@@ -6,6 +6,7 @@ use Zend\ServiceManager\ServiceLocatorInterface;
 
 use Detail\Auth\Exception\ConfigException;
 use Detail\Auth\Identity\Adapter\AuthenticationAdapter as Adapter;
+use Detail\Auth\Options\Identity\Adapter\AuthenticationAdapterOptions as AdapterOptions;
 use Detail\Auth\Options\Identity\IdentityOptions;
 
 class AuthenticationAdapterFactory extends BaseAdapterFactory
@@ -19,10 +20,10 @@ class AuthenticationAdapterFactory extends BaseAdapterFactory
         ServiceLocatorInterface $serviceLocator,
         IdentityOptions $identityOptions
     ) {
-        /** @var \Detail\Auth\Options\Identity\Adapter\AuthenticationAdapterOptions $adapterOptions */
+        /** @var AdapterOptions $adapterOptions */
         $adapterOptions = $identityOptions->getAdapterOptions(
             Adapter::CLASS,
-            'Detail\Auth\Options\Identity\Adapter\AuthenticationAdapterOptions'
+            AdapterOptions::CLASS
         );
 
         $authenticationServiceClass = $adapterOptions->getService();

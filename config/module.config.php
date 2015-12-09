@@ -71,6 +71,7 @@ return array(
             'adapter_factories' => array(
                 'Detail\Auth\Identity\Adapter\ThreeScaleAdapter' => 'Detail\Auth\Factory\Identity\Adapter\ThreeScaleAdapterFactory',
                 'Detail\Auth\Identity\Adapter\AuthenticationAdapter' => 'Detail\Auth\Factory\Identity\Adapter\AuthenticationAdapterFactory',
+                'Detail\Auth\Identity\Adapter\AuthenticationAdapterAdapter' => 'Detail\Auth\Factory\Identity\Adapter\AuthenticationAdapterAdapterFactory',
                 'Detail\Auth\Identity\Adapter\ChainedAdapter' => 'Detail\Auth\Factory\Identity\Adapter\ChainedAdapterFactory',
                 'Detail\Auth\Identity\Adapter\TestAdapter' => 'Detail\Auth\Factory\Identity\Adapter\TestAdapterFactory',
             ),
@@ -78,6 +79,12 @@ return array(
                 'Detail\Auth\Identity\Adapter\ThreeScaleAdapter' => array(
                     'client' => 'ThreeScaleClient',
                     'cache' => null,
+                    'app_id_header' => 'DWS-App-ID',
+                    'app_key_header' => 'DWS-App-Key',
+                ),
+                'Detail\Auth\Identity\Adapter\AuthenticationAdapterAdapter' => array(
+                    'authentication_adapter' => null,
+//                    'cache' => null,
                     'app_id_header' => 'DWS-App-ID',
                     'app_key_header' => 'DWS-App-Key',
                 ),

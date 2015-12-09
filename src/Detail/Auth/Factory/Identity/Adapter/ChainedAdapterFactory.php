@@ -6,6 +6,7 @@ use Zend\ServiceManager\ServiceLocatorInterface;
 
 use Detail\Auth\Exception\ConfigException;
 use Detail\Auth\Identity\Adapter\ChainedAdapter as Adapter;
+use Detail\Auth\Options\Identity\Adapter\ChainedAdapterOptions as AdapterOptions;
 use Detail\Auth\Options\Identity\IdentityOptions;
 
 class ChainedAdapterFactory extends BaseAdapterFactory
@@ -19,10 +20,10 @@ class ChainedAdapterFactory extends BaseAdapterFactory
         ServiceLocatorInterface $serviceLocator,
         IdentityOptions $identityOptions
     ) {
-        /** @var \Detail\Auth\Options\Identity\Adapter\ChainedAdapterOptions $adapterOptions */
+        /** @var AdapterOptions $adapterOptions */
         $adapterOptions = $identityOptions->getAdapterOptions(
             Adapter::CLASS,
-            'Detail\Auth\Options\Identity\Adapter\ChainedAdapterOptions'
+            AdapterOptions::CLASS
         );
 
         /** @var \Detail\Auth\Identity\AdapterManager $adapters */

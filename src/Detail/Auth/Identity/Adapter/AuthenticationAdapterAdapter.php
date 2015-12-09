@@ -154,11 +154,13 @@ class AuthenticationAdapterAdapter extends BaseAdapter implements
             return $this->createResult(false, null, array($e->getMessage()));
         }
 
+        $identity = $result->isValid() ? $result->getIdentity() : null;
+
 //        if ($cache !== null && $cacheKey !== null) {
 //            $cache->setItem($cacheKey, $role);
 //        }
 
-        return $this->createResult($result->isValid(), $result->getIdentity(), $result->getMessages());
+        return $this->createResult($result->isValid(), $identity, $result->getMessages());
     }
 
     /**

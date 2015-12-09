@@ -5,6 +5,7 @@ namespace Detail\Auth\Factory\Identity\Adapter;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
 use Detail\Auth\Identity\Adapter\TestAdapter as Adapter;
+use Detail\Auth\Options\Identity\Adapter\TestAdapterOptions as AdapterOptions;
 use Detail\Auth\Options\Identity\IdentityOptions;
 
 class TestAdapterFactory extends BaseAdapterFactory
@@ -18,10 +19,10 @@ class TestAdapterFactory extends BaseAdapterFactory
         ServiceLocatorInterface $serviceLocator,
         IdentityOptions $identityOptions
     ) {
-        /** @var \Detail\Auth\Options\Identity\Adapter\TestAdapterOptions $adapterOptions */
+        /** @var AdapterOptions $adapterOptions */
         $adapterOptions = $identityOptions->getAdapterOptions(
             Adapter::CLASS,
-            'Detail\Auth\Options\Identity\Adapter\TestAdapterOptions'
+            AdapterOptions::CLASS
         );
 
         $adapter = new Adapter($adapterOptions->getResult(), $adapterOptions->getErrorMessage());

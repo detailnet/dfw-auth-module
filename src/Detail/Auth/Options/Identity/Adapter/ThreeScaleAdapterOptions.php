@@ -6,6 +6,9 @@ use Detail\Core\Options\AbstractOptions;
 
 class ThreeScaleAdapterOptions extends AbstractOptions
 {
+    use CacheTrait;
+    use CredentialHeadersTrait;
+
     /**
      * @var string
      */
@@ -15,16 +18,6 @@ class ThreeScaleAdapterOptions extends AbstractOptions
      * @var string
      */
     protected $cache;
-
-    /**
-     * @var string
-     */
-    protected $appIdHeader;
-
-    /**
-     * @var string
-     */
-    protected $appKeyHeader;
 
     /**
      * @return string
@@ -40,53 +33,5 @@ class ThreeScaleAdapterOptions extends AbstractOptions
     public function setClient($client)
     {
         $this->client = $client;
-    }
-
-    /**
-     * @return string
-     */
-    public function getCache()
-    {
-        return $this->cache;
-    }
-
-    /**
-     * @param string $cache
-     */
-    public function setCache($cache)
-    {
-        $this->cache = $cache;
-    }
-
-    /**
-     * @return string
-     */
-    public function getAppIdHeader()
-    {
-        return $this->appIdHeader;
-    }
-
-    /**
-     * @param string $appIdHeader
-     */
-    public function setAppIdHeader($appIdHeader)
-    {
-        $this->appIdHeader = $appIdHeader;
-    }
-
-    /**
-     * @return string
-     */
-    public function getAppKeyHeader()
-    {
-        return $this->appKeyHeader;
-    }
-
-    /**
-     * @param string $appKeyHeader
-     */
-    public function setAppKeyHeader($appKeyHeader)
-    {
-        $this->appKeyHeader = $appKeyHeader;
     }
 }
