@@ -195,9 +195,10 @@ class AuthenticationAdapterAdapter extends BaseAdapter implements
 
     /**
      * @param string $name
+     * @param $failOnNull
      * @return string
      */
-    protected function getCredential($name)
+    protected function getCredential($name, $failOnNull = true)
     {
         $request = $this->getRequest();
 
@@ -214,6 +215,10 @@ class AuthenticationAdapterAdapter extends BaseAdapter implements
         $credential  = $request->getHeader($header);
 
         if (!$credential) {
+            if ($failOnNull === false) {
+                return null;
+            }
+
             throw new Exception\CredentialMissingException(
                 sprintf(
                     'Missing authentication credential "%s"; provide it using the "%s" header',
@@ -262,8 +267,8 @@ class AuthenticationAdapterAdapter extends BaseAdapter implements
         $identity = null,
         array $messages = array()
     ) {
-        $appId  = $this->getCredential(self::CREDENTIAL_APPLICATION_ID);
-        $appKey = $this->getCredential(self::CREDENTIAL_APPLICATION_KEY);
+        $appId  = $this->getCredential(self::CREDENTIAL_APPLICATION_ID, false);
+        $appKey = $this->getCredential(self::CREDENTIAL_APPLICATION_KEY, false);
 
         return new Result($success, $identity, $messages, $appId, $appKey);
     }
