@@ -2,8 +2,8 @@
 
 namespace Detail\Auth\Identity\Adapter;
 
-use Zend\Authentication\Adapter as AuthenticationAdapter;
-use Zend\Authentication\Result as AuthenticationResult;
+use Zend\Authentication;
+
 //use Zend\Cache\Storage\StorageInterface as CacheStorage;
 //use Zend\EventManager\EventsCapableInterface;
 
@@ -22,7 +22,7 @@ class AuthenticationAdapterAdapter extends BaseAdapter implements
     const CREDENTIAL_APPLICATION_KEY = 'app_key';
 
     /**
-     * @var AuthenticationAdapter\ValidatableAdapterInterface
+     * @var Authentication\Adapter\ValidatableAdapterInterface
      */
     protected $authenticationAdapter;
 
@@ -37,11 +37,11 @@ class AuthenticationAdapterAdapter extends BaseAdapter implements
 //    protected $cache;
 
     /**
-     * @param AuthenticationAdapter\ValidatableAdapterInterface $authenticationAdapter
+     * @param Authentication\Adapter\ValidatableAdapterInterface $authenticationAdapter
      * @param array $credentialsHeaders
      */
     public function __construct(
-        AuthenticationAdapter\ValidatableAdapterInterface $authenticationAdapter,
+        Authentication\Adapter\ValidatableAdapterInterface $authenticationAdapter,
         array $credentialsHeaders
 //        CacheStorage $cache = null
     ) {
@@ -54,7 +54,7 @@ class AuthenticationAdapterAdapter extends BaseAdapter implements
     }
 
     /**
-     * @return AuthenticationAdapter\ValidatableAdapterInterface
+     * @return Authentication\Adapter\ValidatableAdapterInterface
      */
     public function getAuthenticationAdapter()
     {
@@ -62,10 +62,10 @@ class AuthenticationAdapterAdapter extends BaseAdapter implements
     }
 
     /**
-     * @param AuthenticationAdapter\ValidatableAdapterInterface $authenticationAdapter
+     * @param Authentication\Adapter\ValidatableAdapterInterface $authenticationAdapter
      */
     public function setAuthenticationAdapter(
-        AuthenticationAdapter\ValidatableAdapterInterface $authenticationAdapter
+        Authentication\Adapter\ValidatableAdapterInterface $authenticationAdapter
     ) {
         $this->authenticationAdapter = $authenticationAdapter;
     }
@@ -166,7 +166,7 @@ class AuthenticationAdapterAdapter extends BaseAdapter implements
     /**
      * Actually authorize .
      *
-     * @return AuthenticationResult
+     * @return Authentication\Result
      */
     protected function authorize()
     {
