@@ -43,7 +43,7 @@ class AuthenticationAdapterAdapter extends BaseAdapter implements
     public function __construct(
         Authentication\Adapter\ValidatableAdapterInterface $authenticationAdapter,
         array $credentialsHeaders
-//        CacheStorage $cache = null
+        //CacheStorage $cache = null
     ) {
         $this->setAuthenticationAdapter($authenticationAdapter);
         $this->setCredentialHeaders($credentialsHeaders);
