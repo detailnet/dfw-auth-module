@@ -2,28 +2,35 @@
 
 namespace Detail\Auth\Factory\Identity;
 
-use Zend\ServiceManager\FactoryInterface;
-use Zend\ServiceManager\ServiceLocatorInterface;
+use Interop\Container\ContainerInterface;
 
+use Zend\EventManager\ListenerAggregateInterface;
+use Zend\ServiceManager\Factory\FactoryInterface;
+
+use Detail\Auth\Identity\AdapterManager;
 use Detail\Auth\Identity\IdentityProvider;
+use Detail\Auth\Options\ModuleOptions;
 
-class IdentityProviderFactory implements FactoryInterface
+class IdentityProviderFactory implements
+    FactoryInterface
 {
     /**
-     * {@inheritDoc}
+     * Create IdentityProvider
+     *
+     * @param ContainerInterface $container
+     * @param string $requestedName
+     * @param array|null $options
      * @return IdentityProvider
      */
-    public function createService(ServiceLocatorInterface $serviceLocator)
+    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
-        /** @var \Detail\Auth\Options\ModuleOptions $moduleOptions */
-        $moduleOptions = $serviceLocator->get('Detail\Auth\Options\ModuleOptions');
+        /** @var ModuleOptions $moduleOptions */
+        $moduleOptions = $container->get(ModuleOptions::CLASS);
         $identityOptions = $moduleOptions->getIdentity();
 
-        /** @var \Detail\Auth\Identity\AdapterManager $adapters */
-        $adapters = $serviceLocator->get('Detail\Auth\Identity\AdapterManager');
-
+        /** @var AdapterManager $adapters */
+        $adapters = $container->get(AdapterManager::CLASS);
         $identityProvider = new IdentityProvider($adapters);
-
         $defaultAdapter = $identityOptions->getDefaultAdapter();
 
         if ($defaultAdapter !== null) {
@@ -31,10 +38,9 @@ class IdentityProviderFactory implements FactoryInterface
         }
 
         foreach ($identityOptions->getListeners() as $listenerClass) {
-            /** @var \Zend\EventManager\ListenerAggregateInterface $listener */
-            $listener = $serviceLocator->get($listenerClass);
-
-            $identityProvider->getEventManager()->attachAggregate($listener);
+            /** @var ListenerAggregateInterface $listener */
+            $listener = $container->get($listenerClass);
+            $listener->attach($identityProvider->getEventManager());
         }
 
         return $identityProvider;

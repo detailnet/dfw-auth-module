@@ -2,7 +2,9 @@
 
 namespace Detail\Auth\Factory\Identity\Adapter;
 
-use Zend\ServiceManager\ServiceLocatorInterface;
+use Interop\Container\ContainerInterface;
+
+use Zend\Authentication\Adapter\ValidatableAdapterInterface;
 
 use Detail\Auth\Exception\ConfigException;
 use Detail\Auth\Identity\Adapter\AuthenticationAdapterAdapter as Adapter;
@@ -12,14 +14,12 @@ use Detail\Auth\Options\Identity\IdentityOptions;
 class AuthenticationAdapterAdapterFactory extends BaseAdapterFactory
 {
     /**
-     * @param ServiceLocatorInterface $serviceLocator
+     * @param ContainerInterface $container
      * @param IdentityOptions $identityOptions
      * @return Adapter
      */
-    protected function createAdapter(
-        ServiceLocatorInterface $serviceLocator,
-        IdentityOptions $identityOptions
-    ) {
+    protected function createAdapter(ContainerInterface $container, IdentityOptions $identityOptions)
+    {
         /** @var AdapterOptions $adapterOptions */
         $adapterOptions = $identityOptions->getAdapterOptions(
             Adapter::CLASS,
@@ -32,8 +32,8 @@ class AuthenticationAdapterAdapterFactory extends BaseAdapterFactory
             throw new ConfigException('Missing authentication adapter class');
         }
 
-        /** @var \Zend\Authentication\Adapter\ValidatableAdapterInterface $authenticationAdapter */
-        $authenticationAdapter = $serviceLocator->get($authenticationAdapterClass);
+        /** @var ValidatableAdapterInterface $authenticationAdapter */
+        $authenticationAdapter = $container->get($authenticationAdapterClass);
 
         $credentialHeaders = array(
             Adapter::CREDENTIAL_APPLICATION_ID  => $adapterOptions->getAppIdHeader(),
@@ -43,7 +43,7 @@ class AuthenticationAdapterAdapterFactory extends BaseAdapterFactory
         $adapter = new Adapter(
             $authenticationAdapter,
             $credentialHeaders,
-            $this->getCache($serviceLocator, $adapterOptions->getCache())
+            $this->getCache($container, $adapterOptions->getCache())
         );
 
         return $adapter;

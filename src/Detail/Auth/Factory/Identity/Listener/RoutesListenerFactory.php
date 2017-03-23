@@ -2,22 +2,28 @@
 
 namespace Detail\Auth\Factory\Identity\Listener;
 
-use Zend\ServiceManager\FactoryInterface;
-use Zend\ServiceManager\ServiceLocatorInterface;
+use Interop\Container\ContainerInterface;
+
+use Zend\ServiceManager\Factory\FactoryInterface;
 
 use Detail\Auth\Identity\Listener\RoutesListener as Listener;
+use Detail\Auth\Options\ModuleOptions;
 
 class RoutesListenerFactory implements
     FactoryInterface
 {
     /**
-     * {@inheritDoc}
+     * Create RoutesListener
+     *
+     * @param ContainerInterface $container
+     * @param string $requestedName
+     * @param array|null $options
      * @return Listener
      */
-    public function createService(ServiceLocatorInterface $serviceLocator)
+    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
-        /** @var \Detail\Auth\Options\ModuleOptions $moduleOptions */
-        $moduleOptions = $serviceLocator->get('Detail\Auth\Options\ModuleOptions');
+        /** @var ModuleOptions $moduleOptions */
+        $moduleOptions = $container->get(ModuleOptions::CLASS);
         $identityOptions = $moduleOptions->getIdentity();
 
         $routeRules = array();

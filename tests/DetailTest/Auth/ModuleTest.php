@@ -2,7 +2,9 @@
 
 namespace DetailTest\Auth;
 
-use PHPUnit_Framework_TestCase as TestCase;
+use PHPUnit\Framework\TestCase;
+
+use Zend\Loader\StandardAutoloader;
 
 use Detail\Auth\Module;
 
@@ -24,9 +26,11 @@ class ModuleTest extends TestCase
 
         $this->assertTrue(is_array($config));
 
-        $this->assertArrayHasKey('Zend\Loader\StandardAutoloader', $config);
-        $this->assertArrayHasKey('namespaces', $config['Zend\Loader\StandardAutoloader']);
-        $this->assertArrayHasKey('Detail\Auth', $config['Zend\Loader\StandardAutoloader']['namespaces']);
+        $autoloaderClass = StandardAutoloader::CLASS;
+
+        $this->assertArrayHasKey($autoloaderClass, $config);
+        $this->assertArrayHasKey('namespaces', $config[$autoloaderClass]);
+        $this->assertArrayHasKey('Detail\Auth', $config[$autoloaderClass]['namespaces']);
     }
 
     public function testModuleProvidesConfig()
@@ -36,13 +40,6 @@ class ModuleTest extends TestCase
         $this->assertTrue(is_array($config));
         $this->assertArrayHasKey('detail_auth', $config);
         $this->assertTrue(is_array($config['detail_auth']));
-//        $this->assertArrayHasKey('normalization', $config['detail_apigility']);
-//        $this->assertTrue(is_array($config['detail_apigility']['normalization']));
-//        $this->assertArrayHasKey('normalizer', $config['detail_apigility']['normalization']);
-//        $this->assertEquals(
-//            'Detail\Normalization\Normalizer\JMSSerializerBasedNormalizer',
-//            $config['detail_apigility']['normalization']['normalizer']
-//        );
     }
 
     public function testModuleProvidesControllerConfig()

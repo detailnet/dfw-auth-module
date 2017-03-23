@@ -2,39 +2,44 @@
 
 namespace Detail\Auth\Factory\Authorization\Adapter;
 
-use Zend\ServiceManager\FactoryInterface;
-use Zend\ServiceManager\ServiceLocatorInterface;
+use Interop\Container\ContainerInterface;
+
+use ZfcRbac\Service\AuthorizationServiceInterface;
+
+use Zend\ServiceManager\Factory\FactoryInterface;
 
 use Detail\Auth\Authorization\Adapter\ZfcRbacAdapter;
 use Detail\Auth\Exception\ConfigException;
+use Detail\Auth\Options\Authorization\Adapter\ZfcRbacAdapterOptions;
+use Detail\Auth\Options\ModuleOptions;
 
 class ZfcRbacAdapterFactory implements
     FactoryInterface
 {
     /**
-     * {@inheritDoc}
+     * Create ZfcRbacAdapter
+     *
+     * @param ContainerInterface $container
+     * @param string $requestedName
+     * @param array|null $options
      * @return ZfcRbacAdapter
      */
-    public function createService(ServiceLocatorInterface $serviceLocator)
+    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
-        /** @var \Detail\Auth\Options\ModuleOptions $moduleOptions */
-        $moduleOptions = $serviceLocator->get('Detail\Auth\Options\ModuleOptions');
+        /** @var ModuleOptions $moduleOptions */
+        $moduleOptions = $container->get(ModuleOptions::CLASS);
         $authorizationOptions = $moduleOptions->getAuthorization();
 
-        /** @var \Detail\Auth\Options\Authorization\Adapter\ZfcRbacAdapterOptions $adapterOptions */
-        $adapterOptions = $authorizationOptions->getAdapterOptions(
-            'zfc-rbac',
-            'Detail\Auth\Options\Authorization\Adapter\ZfcRbacAdapterOptions'
-        );
-
+        /** @var ZfcRbacAdapterOptions $adapterOptions */
+        $adapterOptions = $authorizationOptions->getAdapterOptions('zfc-rbac', ZfcRbacAdapterOptions::CLASS);
         $rbacServiceClass = $adapterOptions->getService();
 
         if (!$rbacServiceClass) {
             throw new ConfigException('Missing ZfcRbac service class');
         }
 
-        /** @var \ZfcRbac\Service\AuthorizationServiceInterface $rbacService */
-        $rbacService = $serviceLocator->get($rbacServiceClass);
+        /** @var AuthorizationServiceInterface $rbacService */
+        $rbacService = $container->get($rbacServiceClass);
 
         return new ZfcRbacAdapter($rbacService);
     }

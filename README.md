@@ -1,4 +1,4 @@
-# Zend Framework 2 Module for authentication and authorization
+# Zend Framework Module for authentication and authorization
 
 [![Build Status](https://travis-ci.org/detailnet/dfw-auth-module.svg?branch=master)](https://travis-ci.org/detailnet/dfw-auth-module)
 [![Coverage Status](https://img.shields.io/coveralls/detailnet/dfw-auth-module.svg)](https://coveralls.io/r/detailnet/dfw-auth-module)
@@ -6,10 +6,10 @@
 [![Latest Unstable Version](https://poser.pugx.org/detailnet/dfw-auth-module/v/unstable.svg)](https://packagist.org/packages/detailnet/dfw-auth-module)
 
 ## Introduction
-This module contains tools for authentication (based on the [Authentication component for ZF2](https://github.com/zendframework/zf2/tree/master/library/Zend/Authentication)) and authorization (based on [ZfcRbac](https://github.com/ZF-Commons/zfc-rbac)).
+This module contains tools for authentication (based on the [Authentication component for ZF](https://github.com/zendframework/zend-authentication)) and authorization (based on [ZfcRbac](https://github.com/ZF-Commons/zfc-rbac)).
 
 ## Requirements
-[Zend Framework 2 Skeleton Application](http://www.github.com/zendframework/ZendSkeletonApplication) (or compatible architecture)
+[Zend Framework Skeleton Application](http://www.github.com/zendframework/ZendSkeletonApplication) (or compatible architecture)
 
 ## Installation
 Install the module through [Composer](http://getcomposer.org/) using the following steps:
@@ -21,7 +21,7 @@ Install the module through [Composer](http://getcomposer.org/) using the followi
      ```json
      {
          "require": {
-             "detailnet/dfw-auth-module": "1.x-dev"
+             "detailnet/dfw-auth-module": "^1.0"
          }
      }
      ```

@@ -2,23 +2,30 @@
 
 namespace Detail\Auth\Factory\Authorization;
 
-use Zend\ServiceManager\FactoryInterface;
-use Zend\ServiceManager\ServiceLocatorInterface;
+use Interop\Container\ContainerInterface;
 
+use Zend\ServiceManager\Factory\FactoryInterface;
+
+use Detail\Auth\Authorization\Adapter\AdapterInterface;
 use Detail\Auth\Authorization\AuthorizationService;
 use Detail\Auth\Exception\ConfigException;
+use Detail\Auth\Options\ModuleOptions;
 
 class AuthorizationServiceFactory implements
     FactoryInterface
 {
     /**
-     * {@inheritDoc}
+     * Create AuthorizationService
+     *
+     * @param ContainerInterface $container
+     * @param string $requestedName
+     * @param array|null $options
      * @return AuthorizationService
      */
-    public function createService(ServiceLocatorInterface $serviceLocator)
+    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
-        /** @var \Detail\Auth\Options\ModuleOptions $moduleOptions */
-        $moduleOptions = $serviceLocator->get('Detail\Auth\Options\ModuleOptions');
+        /** @var ModuleOptions $moduleOptions */
+        $moduleOptions = $container->get(ModuleOptions::CLASS);
         $authorizationOptions = $moduleOptions->getAuthorization();
 
         $adapterClass = $authorizationOptions->getAdapter();
@@ -27,8 +34,8 @@ class AuthorizationServiceFactory implements
             throw new ConfigException('Missing authorization adapter class');
         }
 
-        /** @var \Detail\Auth\Authorization\Adapter\AdapterInterface $adapter */
-        $adapter = $serviceLocator->get($adapterClass);
+        /** @var AdapterInterface $adapter */
+        $adapter = $container->get($adapterClass);
 
         return new AuthorizationService($adapter);
     }

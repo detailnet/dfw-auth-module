@@ -12,12 +12,12 @@ class ModuleOptions extends AbstractOptions
     protected $authorization;
 
     /**
-     * @var array
+     * @var Identity\IdentityOptions
      */
     protected $identity;
 
     /**
-     * @return Authorization\AuthorizationOptions
+     * @return Authorization\AuthorizationOptions|null
      */
     public function getAuthorization()
     {
@@ -33,7 +33,7 @@ class ModuleOptions extends AbstractOptions
     }
 
     /**
-     * @return Identity\IdentityOptions
+     * @return Identity\IdentityOptions|null
      */
     public function getIdentity()
     {
