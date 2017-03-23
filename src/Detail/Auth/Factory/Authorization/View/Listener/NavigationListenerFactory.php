@@ -2,21 +2,28 @@
 
 namespace Detail\Auth\Factory\Authorization\View\Listener;
 
-use Zend\ServiceManager\FactoryInterface;
-use Zend\ServiceManager\ServiceLocatorInterface;
+use Interop\Container\ContainerInterface;
 
+use Zend\ServiceManager\Factory\FactoryInterface;
+
+use Detail\Auth\Authorization\AuthorizationService;
 use Detail\Auth\Authorization\View\Listener\NavigationListener;
 
-class NavigationListenerFactory implements FactoryInterface
+class NavigationListenerFactory implements
+    FactoryInterface
 {
     /**
-     * {@inheritDoc}
+     * Create NavigationListener
+     *
+     * @param ContainerInterface $container
+     * @param string $requestedName
+     * @param array|null $options
      * @return NavigationListener
      */
-    public function createService(ServiceLocatorInterface $serviceLocator)
+    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
-        /** @var \Detail\Auth\Authorization\AuthorizationService $authorizationService */
-        $authorizationService = $serviceLocator->get('Detail\Auth\Authorization\AuthorizationService');
+        /** @var AuthorizationService $authorizationService */
+        $authorizationService = $container->get(AuthorizationService::CLASS);
 
         return new NavigationListener($authorizationService);
     }

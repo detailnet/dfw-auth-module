@@ -2,25 +2,31 @@
 
 namespace Detail\Auth\Factory\Identity;
 
-use Zend\ServiceManager\FactoryInterface;
-use Zend\ServiceManager\ServiceLocatorInterface;
+use Interop\Container\ContainerInterface;
+
+use Zend\ServiceManager\Factory\FactoryInterface;
 
 use Detail\Auth\Identity\AdapterManager;
+use Detail\Auth\Options\ModuleOptions;
 
-class AdapterManagerFactory implements FactoryInterface
+class AdapterManagerFactory implements
+    FactoryInterface
 {
     /**
-     * {@inheritDoc}
+     * Create AdapterManager
+     *
+     * @param ContainerInterface $container
+     * @param string $requestedName
+     * @param array|null $options
      * @return AdapterManager
      */
-    public function createService(ServiceLocatorInterface $serviceLocator)
+    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
-        /** @var \Detail\Auth\Options\ModuleOptions $moduleOptions */
-        $moduleOptions = $serviceLocator->get('Detail\Auth\Options\ModuleOptions');
+        /** @var ModuleOptions $moduleOptions */
+        $moduleOptions = $container->get(ModuleOptions::CLASS);
         $identityOptions = $moduleOptions->getIdentity();
 
-        $adapters = new AdapterManager();
-        $adapters->setServiceLocator($serviceLocator);
+        $adapters = new AdapterManager($container);
 
         foreach ($identityOptions->getAdapterFactories() as $adapterType => $adapterFactory) {
             $adapters->setFactory($adapterType, $adapterFactory);

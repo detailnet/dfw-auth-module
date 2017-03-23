@@ -2,7 +2,9 @@
 
 namespace Detail\Auth\Factory\Identity\Adapter;
 
-use Zend\ServiceManager\ServiceLocatorInterface;
+use Interop\Container\ContainerInterface;
+
+use Zend\Authentication\AuthenticationService;
 
 use Detail\Auth\Exception\ConfigException;
 use Detail\Auth\Identity\Adapter\AuthenticationAdapter as Adapter;
@@ -12,14 +14,12 @@ use Detail\Auth\Options\Identity\IdentityOptions;
 class AuthenticationAdapterFactory extends BaseAdapterFactory
 {
     /**
-     * @param ServiceLocatorInterface $serviceLocator
+     * @param ContainerInterface $container
      * @param IdentityOptions $identityOptions
      * @return Adapter
      */
-    protected function createAdapter(
-        ServiceLocatorInterface $serviceLocator,
-        IdentityOptions $identityOptions
-    ) {
+    protected function createAdapter(ContainerInterface $container, IdentityOptions $identityOptions)
+    {
         /** @var AdapterOptions $adapterOptions */
         $adapterOptions = $identityOptions->getAdapterOptions(
             Adapter::CLASS,
@@ -32,8 +32,8 @@ class AuthenticationAdapterFactory extends BaseAdapterFactory
             throw new ConfigException('Missing authentication service class');
         }
 
-        /** @var \Zend\Authentication\AuthenticationService $authenticationService */
-        $authenticationService = $serviceLocator->get($authenticationServiceClass);
+        /** @var AuthenticationService $authenticationService */
+        $authenticationService = $container->get($authenticationServiceClass);
 
         $adapter = new Adapter($authenticationService);
 

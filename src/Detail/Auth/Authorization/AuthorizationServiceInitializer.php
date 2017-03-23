@@ -2,29 +2,24 @@
 
 namespace Detail\Auth\Authorization;
 
-use Zend\ServiceManager\InitializerInterface;
-use Zend\ServiceManager\ServiceLocatorInterface;
-use Zend\ServiceManager\ServiceLocatorAwareInterface;
+use Interop\Container\ContainerInterface;
+use Zend\ServiceManager\Initializer\InitializerInterface;
 
 class AuthorizationServiceInitializer implements
     InitializerInterface
 {
     /**
-     * Initialize
+     * Initialize the given instance
      *
-     * @param mixed $instance
-     * @param ServiceLocatorInterface $serviceLocator
-     * @return mixed
+     * @param ContainerInterface $container
+     * @param object $instance
+     * @return void
      */
-    public function initialize($instance, ServiceLocatorInterface $serviceLocator)
+    public function __invoke(ContainerInterface $container, $instance)
     {
         if ($instance instanceof AuthorizationServiceAwareInterface) {
-            if ($serviceLocator instanceof ServiceLocatorAwareInterface) {
-                $serviceLocator = $serviceLocator->getServiceLocator();
-            }
-
-            /** @var AuthorizationServiceInterface $authorizationService */
-            $authorizationService = $serviceLocator->get(__NAMESPACE__ . '\AuthorizationService');
+            /** @var AuthorizationService $authorizationService */
+            $authorizationService = $container->get(AuthorizationService::CLASS);
             $instance->setAuthorizationService($authorizationService);
         }
     }

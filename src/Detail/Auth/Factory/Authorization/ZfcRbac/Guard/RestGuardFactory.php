@@ -2,49 +2,40 @@
 
 namespace Detail\Auth\Factory\Authorization\ZfcRbac\Guard;
 
-use Zend\ServiceManager\FactoryInterface;
-use Zend\ServiceManager\MutableCreationOptionsInterface;
-use Zend\ServiceManager\ServiceLocatorInterface;
-use Zend\ServiceManager\ServiceLocatorAwareInterface;
+use Interop\Container\ContainerInterface;
+
+use ZfcRbac\Options\ModuleOptions as RbacOptions;
+use ZfcRbac\Service\AuthorizationService;
+
+use ZF\MvcAuth\Authorization\DefaultResourceResolverListener;
+
+use Zend\ServiceManager\Factory\FactoryInterface;
 
 use Detail\Auth\Authorization\ZfcRbac\Guard\RestGuard;
 
 class RestGuardFactory implements
-    FactoryInterface,
-    MutableCreationOptionsInterface
+    FactoryInterface
 {
     /**
-     * @var array
+     * Create RestGuard
+     *
+     * @param ContainerInterface $container
+     * @param string $requestedName
+     * @param array|null $options
+     * @return RestGuard
      */
-    protected $options = array();
-
-    /**
-     * @param array $options
-     */
-    public function setCreationOptions(array $options)
+    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
-        $this->options = $options;
-    }
+        /* @var RbacOptions $rbacOptions */
+        $rbacOptions = $container->get(RbacOptions::CLASS);
 
-    /**
-     * {@inheritDoc}
-     */
-    public function createService(ServiceLocatorInterface $serviceLocator)
-    {
-        if ($serviceLocator instanceof ServiceLocatorAwareInterface) {
-            $serviceLocator = $serviceLocator->getServiceLocator();
-        }
+        /* @var AuthorizationService $authorizationService */
+        $authorizationService = $container->get(AuthorizationService::CLASS);
 
-        /* @var \ZfcRbac\Options\ModuleOptions $moduleOptions */
-        $rbacOptions = $serviceLocator->get('ZfcRbac\Options\ModuleOptions');
+        /** @var DefaultResourceResolverListener $resourceResolver */
+        $resourceResolver = $container->get(DefaultResourceResolverListener::CLASS);
 
-        /* @var \ZfcRbac\Service\AuthorizationService $authorizationService */
-        $authorizationService = $serviceLocator->get('ZfcRbac\Service\AuthorizationService');
-
-        /** @var \ZF\MvcAuth\Authorization\DefaultResourceResolverListener $resourceResolver */
-        $resourceResolver = $serviceLocator->get('ZF\MvcAuth\Authorization\DefaultResourceResolverListener');
-
-        $guard = new RestGuard($authorizationService, $resourceResolver, $this->options);
+        $guard = new RestGuard($authorizationService, $resourceResolver, $options ?: array());
         $guard->setProtectionPolicy($rbacOptions->getProtectionPolicy());
 
         return $guard;

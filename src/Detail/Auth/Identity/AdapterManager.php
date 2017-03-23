@@ -14,15 +14,18 @@ use Detail\Auth\Exception;
 class AdapterManager extends AbstractPluginManager
 {
     /**
-     * {@inheritDoc}
+     * @param string $name
+     * @return boolean
+     * @todo Don't look in peering service managers
      */
-    public function has($name, $checkAbstractFactories = true, $usePeeringServiceManagers = true)
+    public function has($name)
     {
-        return parent::has($name, $checkAbstractFactories, false); // Don't look in peering service managers
+        return parent::has($name);
     }
 
     /**
-     * {@inheritDoc}
+     * @param string $type
+     * @return boolean
      */
     public function hasAdapter($type)
     {
@@ -30,19 +33,22 @@ class AdapterManager extends AbstractPluginManager
     }
 
     /**
-     * {@inheritDoc}
+     * @param string $name
+     * @param array|null $options
      * @return Adapter\AdapterInterface
+     * @todo Don't look in peering service managers
      */
-    public function get($name, $options = array(), $usePeeringServiceManagers = true)
+    public function get($name, array $options = null)
     {
-        return parent::get($name, $options, false); // Don't look in peering service managers
+        return parent::get($name, $options);
     }
 
     /**
-     * {@inheritDoc}
+     * @param string $type
+     * @param array|null $options
      * @return Adapter\AdapterInterface
      */
-    public function getAdapter($type, $options = array())
+    public function getAdapter($type, array $options = null)
     {
         return $this->get($type, $options);
     }

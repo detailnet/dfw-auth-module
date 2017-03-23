@@ -2,17 +2,20 @@
 
 namespace DetailTest\Auth\Options;
 
+use Detail\Auth\Options\Authorization\AuthorizationOptions;
+use Detail\Auth\Options\ModuleOptions;
+
 class ModuleOptionsTest extends OptionsTestCase
 {
     /**
-     * @var \Detail\Auth\Options\ModuleOptions
+     * @var ModuleOptions
      */
     protected $options;
 
     protected function setUp()
     {
         $this->options = $this->getOptions(
-            'Detail\Auth\Options\ModuleOptions',
+            ModuleOptions::CLASS,
             array(
                 'getAuthorization',
                 'setAuthorization',
@@ -22,7 +25,7 @@ class ModuleOptionsTest extends OptionsTestCase
 
     public function testOptionsExist()
     {
-        $this->assertInstanceOf('Detail\Auth\Options\ModuleOptions', $this->options);
+        $this->assertInstanceOf(ModuleOptions::CLASS, $this->options);
     }
 
     public function testAuthorizationCanBeSet()
@@ -33,6 +36,6 @@ class ModuleOptionsTest extends OptionsTestCase
 
         $authorization = $this->options->getAuthorization();
 
-        $this->assertInstanceOf('Detail\Auth\Options\Authorization\AuthorizationOptions', $authorization);
+        $this->assertInstanceOf(AuthorizationOptions::CLASS, $authorization);
     }
 }

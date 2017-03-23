@@ -2,37 +2,38 @@
 
 namespace Detail\Auth\Factory\Identity\Adapter;
 
-use Detail\Auth\Options\Identity\Adapter\CacheTrait;
+use Interop\Container\ContainerInterface;
+
 use Zend\Cache\Storage\StorageInterface as CacheStorage;
-use Zend\ServiceManager\FactoryInterface;
-use Zend\ServiceManager\ServiceLocatorInterface;
-use Zend\ServiceManager\ServiceLocatorAwareInterface;
+use Zend\ServiceManager\Factory\FactoryInterface;
 
 use Detail\Auth\Exception\ConfigException;
 use Detail\Auth\Identity\Adapter\BaseAdapter;
+use Detail\Auth\Identity\IdentityProvider;
 use Detail\Auth\Options\Identity\IdentityOptions;
+use Detail\Auth\Options\ModuleOptions;
 
 abstract class BaseAdapterFactory implements
     FactoryInterface
 {
     /**
-     * {@inheritDoc}
-     * @return BaseAdapter
+     * Create adapter
+     *
+     * @param ContainerInterface $container
+     * @param string $requestedName
+     * @param array|null $options
+     * @return mixed
      */
-    public function createService(ServiceLocatorInterface $serviceLocator)
+    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
-        if ($serviceLocator instanceof ServiceLocatorAwareInterface) {
-            $serviceLocator = $serviceLocator->getServiceLocator();
-        }
-
-        /** @var \Detail\Auth\Options\ModuleOptions $moduleOptions */
-        $moduleOptions = $serviceLocator->get('Detail\Auth\Options\ModuleOptions');
+        /** @var ModuleOptions $moduleOptions */
+        $moduleOptions = $container->get(ModuleOptions::CLASS);
         $identityOptions = $moduleOptions->getIdentity();
 
-        $adapter = $this->createAdapter($serviceLocator, $identityOptions);
+        $adapter = $this->createAdapter($container, $identityOptions);
 
-        /** @var \Detail\Auth\Identity\IdentityProvider $identityProvider */
-        $identityProvider = $serviceLocator->get('Detail\Auth\Identity\IdentityProvider');
+        /** @var IdentityProvider $identityProvider */
+        $identityProvider = $container->get(IdentityProvider::CLASS);
 
         if ($adapter instanceof BaseAdapter) {
             $adapter->setEventManager($identityProvider->getEventManager());
@@ -42,35 +43,32 @@ abstract class BaseAdapterFactory implements
     }
 
     /**
-     * @param ServiceLocatorInterface $serviceLocator
+     * @param ContainerInterface $container
      * @param IdentityOptions $identityOptions
      * @return mixed
      */
-    abstract protected function createAdapter(
-        ServiceLocatorInterface $serviceLocator,
-        IdentityOptions $identityOptions
-    );
+    abstract protected function createAdapter(ContainerInterface $container, IdentityOptions $identityOptions);
 
     /**
-     * @param ServiceLocatorInterface $serviceLocator
+     * @param ContainerInterface $container
      * @param string|null $cacheName
      * @return CacheStorage|null
      */
-    protected function getCache(ServiceLocatorInterface $serviceLocator, $cacheName)
+    protected function getCache(ContainerInterface $container, $cacheName)
     {
         if ($cacheName !== null) {
-            return $this->createCache($serviceLocator, $cacheName);
+            return $this->createCache($container, $cacheName);
         }
 
         return null;
     }
 
     /**
-     * @param ServiceLocatorInterface $serviceLocator
+     * @param ContainerInterface $container
      * @param string $cacheName
      * @return CacheStorage
      */
-    protected function createCache(ServiceLocatorInterface $serviceLocator, $cacheName)
+    protected function createCache(ContainerInterface $container, $cacheName)
     {
         if (!is_string($cacheName) || strlen($cacheName) == 0) {
             throw new ConfigException(
@@ -81,7 +79,7 @@ abstract class BaseAdapterFactory implements
             );
         }
 
-        if (!$serviceLocator->has($cacheName)) {
+        if (!$container->has($cacheName)) {
             throw new ConfigException(
                 sprintf(
                     '%s requires service "%s"; service does not exist',
@@ -91,7 +89,7 @@ abstract class BaseAdapterFactory implements
             );
         }
 
-        $cache = $serviceLocator->get($cacheName);
+        $cache = $container->get($cacheName);
 
         if (!$cache instanceof CacheStorage) {
             throw new ConfigException(

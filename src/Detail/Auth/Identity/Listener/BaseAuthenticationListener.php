@@ -22,8 +22,9 @@ abstract class BaseAuthenticationListener implements
      * events of Detail\Auth\Identity\IdentityProvider.
      *
      * @param EventManagerInterface $events
+     * @param integer $priority
      */
-    public function attach(EventManagerInterface $events)
+    public function attach(EventManagerInterface $events, $priority = 1)
     {
         $this->listeners[] = $events->attach(
             Event\IdentityProviderEvent::EVENT_PRE_AUTHENTICATE,
@@ -56,9 +57,9 @@ abstract class BaseAuthenticationListener implements
     public function detach(EventManagerInterface $events)
     {
         foreach ($this->listeners as $index => $listener) {
-            if ($events->detach($listener)) {
-                unset($listener[$index]);
-            }
+            $events->detach($listener);
+
+            unset($listener[$index]);
         }
     }
 

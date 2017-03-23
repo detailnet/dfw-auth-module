@@ -2,40 +2,45 @@
 
 namespace Detail\Auth;
 
-use Zend\Console\Adapter\AdapterInterface as Console;
 use Zend\Console\Request as ConsoleRequest;
 use Zend\Http\Request as HttpRequest;
 use Zend\Loader\AutoloaderFactory;
 use Zend\Loader\StandardAutoloader;
 use Zend\ModuleManager\Feature\AutoloaderProviderInterface;
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
-use Zend\ModuleManager\Feature\ConsoleUsageProviderInterface;
 use Zend\ModuleManager\Feature\ControllerProviderInterface;
 use Zend\ModuleManager\Feature\ServiceProviderInterface;
+use Zend\ServiceManager\ServiceManager;
 use Zend\Mvc\MvcEvent;
 
+use Detail\Auth\Authorization\View\Listener\NavigationListener;
+use Detail\Auth\Identity\Adapter\TestAdapter;
 use Detail\Auth\Identity\Event;
 use Detail\Auth\Identity\IdentityProvider;
-use Detail\Auth\Identity\ThreeScaleResult;
 use Detail\Auth\Service\HttpRequestAwareInterface;
 use Detail\Auth\Service\MvcEventAwareInterface;
 
 class Module implements
     AutoloaderProviderInterface,
     ConfigProviderInterface,
-    ConsoleUsageProviderInterface,
     ControllerProviderInterface,
     ServiceProviderInterface
 {
+    /**
+     * @param MvcEvent $event
+     */
     public function onBootstrap(MvcEvent $event)
     {
         $this->bootstrapAuth($event);
         $this->bootstrapNavigation($event);
     }
 
+    /**
+     * @param MvcEvent $event
+     */
     public function bootstrapAuth(MvcEvent $event)
     {
-        /** @var \Zend\ServiceManager\ServiceManager $services */
+        /** @var ServiceManager $services */
         $services = $event->getApplication()->getServiceManager();
 
         /** @var IdentityProvider $identityProvider */
@@ -44,7 +49,7 @@ class Module implements
         $request = $event->getRequest();
 
         // This is somewhat redundant since each event will be injected with the MVC event.
-        $injectRequest = function(Event\IdentityAdapterEvent $authEvent) use ($request) {
+        $injectRequest = function (Event\IdentityAdapterEvent $authEvent) use ($request) {
             $adapter = $authEvent->getParam(Event\IdentityAdapterEvent::PARAM_ADAPTER);
 
             if ($adapter instanceof HttpRequestAwareInterface
@@ -54,7 +59,7 @@ class Module implements
             }
         };
 
-        $injectMvcEvent = function(Event\IdentityEvent $identityEvent) use ($event) {
+        $injectMvcEvent = function (Event\IdentityEvent $identityEvent) use ($event) {
             if ($identityEvent instanceof MvcEventAwareInterface) {
                 $identityEvent->setMvcEvent($event);
             }
@@ -68,51 +73,22 @@ class Module implements
         $events->attach(Event\IdentityAdapterEvent::EVENT_AUTHENTICATE, $injectMvcEvent, 10000);
         $events->attach(Event\IdentityProviderEvent::EVENT_AUTHENTICATE, $injectMvcEvent, 10000);
 
-        /** @var \Detail\Auth\Options\ThreeScaleOptions $threeScaleOptions */
-        $threeScaleOptions = $services->get('Detail\Auth\Options\ThreeScaleOptions');
-
-        // We may need to log requests to 3scale, so the usage can be reported later
-        if ($threeScaleOptions->getReporting()->isEnabled()) {
-            $attached = false;
-
-            $attachReportingListener = function(Event\IdentityAdapterEvent $identityEvent) use ($event, $services, &$attached) {
-                $result = $identityEvent->getParam($identityEvent::PARAM_RESULT);
-
-                // Make sure the listener is only attached once
-                if (!$attached
-                    && $result instanceof ThreeScaleResult
-                    && $result->hasUsage()
-                    && $services->has('Detail\Auth\Identity\Listener\ThreeScaleReportingListener')
-                ) {
-                    /** @var \Detail\Auth\Identity\Listener\ThreeScaleReportingListener $reportingListener */
-                    $reportingListener = $services->get('Detail\Auth\Identity\Listener\ThreeScaleReportingListener');
-                    $reportingListener->setResult($result);
-
-                    $events = $event->getApplication()->getEventManager();
-                    $events->attachAggregate($reportingListener);
-
-                    $attached = true;
-                }
-            };
-
-            $events->attach(Event\IdentityAdapterEvent::EVENT_AUTHENTICATE, $attachReportingListener, 9999);
-        }
-
         if ($request instanceof ConsoleRequest) {
             /** @todo We should probably disable the authentication instead of using a test/dummy adapter... */
-            $identityProvider->setDefaultAdapterType(__NAMESPACE__ . '\Identity\Adapter\TestAdapter');
+            $identityProvider->setDefaultAdapterType(TestAdapter::CLASS);
         }
     }
 
+    /**
+     * @param MvcEvent $event
+     */
     public function bootstrapNavigation(MvcEvent $event)
     {
-        /** @var \Zend\ServiceManager\ServiceManager $serviceManager */
+        /** @var ServiceManager $serviceManager */
         $serviceManager = $event->getApplication()->getServiceManager();
 
-        /** @var \Detail\Auth\Authorization\View\Listener\NavigationListener $authorizationListener */
-        $authorizationListener = $serviceManager->get(
-            'Detail\Auth\Authorization\View\Listener\NavigationListener'
-        );
+        /** @var NavigationListener $authorizationListener */
+        $authorizationListener = $serviceManager->get(NavigationListener::CLASS);
 
         // The AbstractHelper attaches it's own AclListener (which is useless for us).
         // But since we can't disable the AclListener (AbstractHelper wouldn't trigger the "isAllowed" event),
@@ -156,16 +132,5 @@ class Module implements
     public function getServiceConfig()
     {
         return array();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getConsoleUsage(Console $console)
-    {
-        return array(
-            'Actions:',
-            'threescale report-transactions' => 'Report logged transactions to 3scale',
-        );
     }
 }

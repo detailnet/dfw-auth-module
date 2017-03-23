@@ -2,32 +2,31 @@
 
 namespace Detail\Auth\Factory\Identity\Adapter;
 
-use Zend\ServiceManager\ServiceLocatorInterface;
+use Interop\Container\ContainerInterface;
 
 use Detail\Auth\Exception\ConfigException;
 use Detail\Auth\Identity\Adapter\ChainedAdapter as Adapter;
+use Detail\Auth\Identity\AdapterManager;
 use Detail\Auth\Options\Identity\Adapter\ChainedAdapterOptions as AdapterOptions;
 use Detail\Auth\Options\Identity\IdentityOptions;
 
 class ChainedAdapterFactory extends BaseAdapterFactory
 {
     /**
-     * @param ServiceLocatorInterface $serviceLocator
+     * @param ContainerInterface $container
      * @param IdentityOptions $identityOptions
      * @return Adapter
      */
-    protected function createAdapter(
-        ServiceLocatorInterface $serviceLocator,
-        IdentityOptions $identityOptions
-    ) {
+    protected function createAdapter(ContainerInterface $container, IdentityOptions $identityOptions)
+    {
         /** @var AdapterOptions $adapterOptions */
         $adapterOptions = $identityOptions->getAdapterOptions(
             Adapter::CLASS,
             AdapterOptions::CLASS
         );
 
-        /** @var \Detail\Auth\Identity\AdapterManager $adapters */
-        $adapters = $serviceLocator->get('Detail\Auth\Identity\AdapterManager');
+        /** @var AdapterManager $adapters */
+        $adapters = $container->get(AdapterManager::CLASS);
         $chainedAdapters = $adapterOptions->getAdapters();
 
         if (count($chainedAdapters) === 0) {

@@ -1,6 +1,6 @@
 {
     "name": "detailnet/dfw-auth-module",
-    "description": "Zend Framework 2 Module for authentication and authorization",
+    "description": "Zend Framework Module for authentication and authorization",
     "type": "library",
     "keywords": [
         "dfw",
@@ -8,7 +8,7 @@
         "authentication",
         "authorization",
         "module",
-        "zf2"
+        "zf"
     ],
     "homepage": "https://github.com/detailnet/dfw-auth-module/",
     "license": "MIT",
@@ -19,28 +19,27 @@
         }
     ],
     "require": {
-        "php": ">=5.5.0",
-        "zendframework/zend-console": "2.*",
-        "zendframework/zend-loader": "2.*",
-        "zendframework/zend-http": "2.*",
-        "zendframework/zend-modulemanager": "2.*",
-        "zendframework/zend-mvc": "2.*",
-        "zendframework/zend-navigation": "2.*",
-        "zendframework/zend-servicemanager": "2.*",
-        "zendframework/zend-stdlib": "2.*",
-        "detailnet/dfw-core": "~0.2",
-        "detailnet/dfw-log": "~0.2.0"
+        "php": "^7.0",
+        "zendframework/zend-console": "^2.6",
+        "zendframework/zend-loader": "^2.5.1",
+        "zendframework/zend-http": "^2.5.4",
+        "zendframework/zend-modulemanager": "^2.7.2",
+        "zendframework/zend-mvc": "^3.0.1",
+        "zendframework/zend-navigation": "^2.8.1",
+        "zendframework/zend-servicemanager": "^3.1",
+        "zendframework/zend-stdlib": "^3.0.1",
+        "detailnet/dfw-core": "^0.3",
+        "detailnet/dfw-log": "^1.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "~4.4.5",
-        "squizlabs/php_codesniffer" : "~2.2.0",
-        "phpmd/phpmd": "~2.1.3",
-        "satooshi/php-coveralls": "dev-master",
-        "zf-commons/zfc-rbac": "~2.4",
-        "zfcampus/zf-mvc-auth": "~1.0-dev",
-        "3scale/3scale_ws_api_for_php": "~2.6.2",
-        "zendframework/zend-authentication": "2.*",
-        "zendframework/zend-cache": "2.*"
+        "phpunit/phpunit": "^6.0",
+        "squizlabs/php_codesniffer" : "^2.2",
+        "phpmd/phpmd": "^2.2",
+        "satooshi/php-coveralls": "^1.0",
+        "zf-commons/zfc-rbac": "^2.4",
+        "zfcampus/zf-mvc-auth": "^1.3",
+        "zendframework/zend-authentication": "^2.5.3",
+        "zendframework/zend-cache": "^2.7.1"
     },
     "suggest": {
         "zf-commons/zfc-rbac": "For usage of ZfcRbac based authorization",
