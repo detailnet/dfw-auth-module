@@ -3,26 +3,10 @@
 namespace Detail\Auth\Identity;
 
 use Zend\ServiceManager\AbstractPluginManager;
+use Zend\ServiceManager\Exception\InvalidServiceException;
 
-use Detail\Auth\Exception;
-
-/**
- * Plugin manager implementation for identity adapters.
- *
- * Enforces that senders retrieved are instances of AdapterInterface.
- */
 class AdapterManager extends AbstractPluginManager
 {
-    /**
-     * @param string $name
-     * @return boolean
-     * @todo Don't look in peering service managers
-     */
-    public function has($name)
-    {
-        return parent::has($name);
-    }
-
     /**
      * @param string $type
      * @return boolean
@@ -30,17 +14,6 @@ class AdapterManager extends AbstractPluginManager
     public function hasAdapter($type)
     {
         return $this->has($type);
-    }
-
-    /**
-     * @param string $name
-     * @param array|null $options
-     * @return Adapter\AdapterInterface
-     * @todo Don't look in peering service managers
-     */
-    public function get($name, array $options = null)
-    {
-        return parent::get($name, $options);
     }
 
     /**
@@ -54,19 +27,22 @@ class AdapterManager extends AbstractPluginManager
     }
 
     /**
-     * {@inheritDoc}
+     * Validate an instance
+     *
+     * @param object $instance
+     * @return void
      */
-    public function validatePlugin($plugin)
+    public function validate($instance)
     {
-        if ($plugin instanceof Adapter\AdapterInterface) {
+        if ($instance instanceof Adapter\AdapterInterface) {
             // We're okay
             return;
         }
 
-        throw new Exception\RuntimeException(
+        throw new InvalidServiceException(
             sprintf(
                 'Adapter of type %s is invalid; must implement %s',
-                (is_object($plugin) ? get_class($plugin) : gettype($plugin)),
+                (is_object($instance) ? get_class($instance) : gettype($instance)),
                 Adapter\AdapterInterface::CLASS
             )
         );
