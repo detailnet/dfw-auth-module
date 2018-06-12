@@ -2,9 +2,7 @@
 
 namespace Detail\Auth\Options\Identity\Adapter;
 
-use Zend\Stdlib\AbstractOptions;
-
-class AuthenticationAdapterAdapterOptions extends AbstractOptions
+class AuthenticationAdapterAdapterOptions extends AdapterOptions
 {
     use CacheTrait;
     use CredentialHeadersTrait;

@@ -2,9 +2,7 @@
 
 namespace Detail\Auth\Options\Identity\Adapter;
 
-use Zend\Stdlib\AbstractOptions;
-
-class ChainedAdapterOptions extends AbstractOptions
+class ChainedAdapterOptions extends AdapterOptions
 {
     /**
      * @var array

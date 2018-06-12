@@ -2,9 +2,7 @@
 
 namespace Detail\Auth\Options\Identity\Adapter;
 
-use Zend\Stdlib\AbstractOptions;
-
-class TestAdapterOptions extends AbstractOptions
+class TestAdapterOptions extends AdapterOptions
 {
     /**
      * @var boolean

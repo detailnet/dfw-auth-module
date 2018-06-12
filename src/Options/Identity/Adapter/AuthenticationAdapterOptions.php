@@ -2,9 +2,7 @@
 
 namespace Detail\Auth\Options\Identity\Adapter;
 
-use Zend\Stdlib\AbstractOptions;
-
-class AuthenticationAdapterOptions extends AbstractOptions
+class AuthenticationAdapterOptions extends AdapterOptions
 {
     /**
      * @var string
