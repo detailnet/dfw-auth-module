@@ -29,7 +29,7 @@ class IdentityProvider implements
     /**
      * @var string
      */
-    protected $defaultAdapterType = '3scale';
+    protected $defaultAdapterType = Adapter\TestAdapter::CLASS;
 
     /**
      * @var Identity
@@ -62,7 +62,7 @@ class IdentityProvider implements
     /**
      * @param AdapterManager $adapters
      */
-    public function setAdapters($adapters)
+    public function setAdapters(AdapterManager $adapters)
     {
         $this->adapters = $adapters;
     }
@@ -128,7 +128,6 @@ class IdentityProvider implements
      * Set the event manager instance.
      *
      * @param EventManagerInterface $events
-     * @return self
      */
     public function setEventManager(EventManagerInterface $events)
     {
@@ -141,17 +140,14 @@ class IdentityProvider implements
         );
 
         $this->events = $events;
-        return $this;
     }
 
     /**
      * @param array $params
-     * @return self
      */
     public function setEventParams(array $params)
     {
         $this->eventParams = $params;
-        return $this;
     }
 
     /**
@@ -179,11 +175,14 @@ class IdentityProvider implements
         $events = $this->getEventManager();
 
         $preEvent = $this->prepareEvent(Event\IdentityProviderEvent::EVENT_PRE_AUTHENTICATE, $preEventParams);
-        $eventResults = $events->trigger($preEvent, function ($result) {
-            /** @todo Give listeners the opportunity to provide an identity (in which case we wouldn't continue with authentication) */
-            // Stop the execution when a listeners returns false
-            return ($result === false);
-        });
+        $eventResults = $events->triggerEventUntil(
+            function ($result) {
+                /** @todo Give listeners the opportunity to provide an identity (in which case we wouldn't continue with authentication) */
+                // Stop the execution when a listeners returns false
+                return ($result === false);
+            },
+            $preEvent
+        );
 
         // Don't authenticate when a listener stops the execution of the event
         if ($eventResults->stopped()) {
@@ -230,7 +229,7 @@ class IdentityProvider implements
         );
 
         $postEvent = $this->prepareEvent(Event\IdentityProviderEvent::EVENT_AUTHENTICATE, $postEventParams);
-        $events->trigger($postEvent);
+        $events->triggerEvent($postEvent);
 
         return $result;
     }
@@ -275,10 +274,6 @@ class IdentityProvider implements
         $defaultParams = $this->getEventParams();
         $params = array_merge($defaultParams, $params);
 
-        if (empty($params)) {
-            return $params;
-        }
-
-        return $this->getEventManager()->prepareArgs($params);
+        return new ArrayObject($params);
     }
 }

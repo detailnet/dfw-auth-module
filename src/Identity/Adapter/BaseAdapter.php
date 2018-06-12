@@ -4,7 +4,6 @@ namespace Detail\Auth\Identity\Adapter;
 
 use ArrayObject;
 
-//use Zend\EventManager\EventManager;
 use Zend\EventManager\EventManagerInterface;
 
 use Detail\Auth\Identity\Event;
@@ -27,16 +26,10 @@ abstract class BaseAdapter implements
     /**
      * Retrieve the event manager instance.
      *
-     * Lazy-initializes one if none present.
-     *
      * @return EventManagerInterface
      */
     public function getEventManager()
     {
-//        if (!$this->events) {
-//            $this->setEventManager(new EventManager());
-//        }
-
         return $this->events;
     }
 
@@ -44,7 +37,6 @@ abstract class BaseAdapter implements
      * Set the event manager instance.
      *
      * @param EventManagerInterface $events
-     * @return self
      */
     public function setEventManager(EventManagerInterface $events)
     {
@@ -57,17 +49,14 @@ abstract class BaseAdapter implements
 //        );
 
         $this->events = $events;
-        return $this;
     }
 
     /**
      * @param array $params
-     * @return self
      */
     public function setEventParams(array $params)
     {
         $this->eventParams = $params;
-        return $this;
     }
 
     /**
@@ -90,10 +79,13 @@ abstract class BaseAdapter implements
         $events = $this->getEventManager();
 
         $preEvent = $this->prepareEvent(Event\IdentityAdapterEvent::EVENT_PRE_AUTHENTICATE, $preEventParams);
-        $eventResults = $events->trigger($preEvent, function ($result) {
-            // Stop the execution when a listeners returns false
-            return ($result === false);
-        });
+        $eventResults = $events->triggerEventUntil(
+            function ($result) {
+                // Stop the execution when a listeners returns false
+                return ($result === false);
+            },
+            $preEvent
+        );
 
         // Don't authenticate when a listener stops the execution of the event
         if ($eventResults->stopped()) {
@@ -121,7 +113,7 @@ abstract class BaseAdapter implements
         );
 
         $postEvent = $this->prepareEvent(Event\IdentityAdapterEvent::EVENT_AUTHENTICATE, $postEventParams);
-        $events->trigger($postEvent);
+        $events->triggerEvent($postEvent);
 
         return $result;
     }
@@ -152,11 +144,7 @@ abstract class BaseAdapter implements
         $defaultParams = $this->getEventParams();
         $params = array_merge($defaultParams, $params);
 
-        if (empty($params)) {
-            return $params;
-        }
-
-        return $this->getEventManager()->prepareArgs($params);
+        return new ArrayObject($params);
     }
 
     /**

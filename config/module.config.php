@@ -74,8 +74,7 @@ return [
                     'service' => 'Zend\Authentication\AuthenticationService',
                 ],
                 'Detail\Auth\Identity\Adapter\ChainedAdapter' => [
-                    'adapters' => [
-                    ],
+                    'adapters' => [],
                 ],
                 'Detail\Auth\Identity\Adapter\TestAdapter' => [
                     'result' => true,
