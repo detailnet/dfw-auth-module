@@ -1,6 +1,6 @@
 <?php
 
-return array(
-    'detail_auth' => array(
-    ),
-);
+return [
+    'detail_auth' => [
+    ],
+];

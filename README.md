@@ -40,6 +40,3 @@ Install the module through [Composer](http://getcomposer.org/) using the followi
 
   7. Copy `vendor/detailnet/dfw-auth-module/config/detail_auth.local.php.dist` into your application's
      `config/autoload` directory, rename it to `detail_auth.local.php` and make the appropriate changes.
-
-## Usage
-tbd

@@ -19,60 +19,53 @@
         }
     ],
     "require": {
-        "php": "^7.0",
+        "php": "^7.1",
         "zendframework/zend-console": "^2.6",
-        "zendframework/zend-loader": "^2.5.1",
         "zendframework/zend-http": "^2.5.4",
         "zendframework/zend-modulemanager": "^2.7.2",
         "zendframework/zend-mvc": "^3.0.1",
         "zendframework/zend-navigation": "^2.8.1",
         "zendframework/zend-servicemanager": "^3.1",
         "zendframework/zend-stdlib": "^3.0.1",
-        "detailnet/dfw-core": "^0.3",
         "detailnet/dfw-log": "^1.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^6.0",
-        "squizlabs/php_codesniffer" : "^2.2",
+        "phpunit/phpunit": "^7.0",
+        "squizlabs/php_codesniffer" : "^3.2",
         "phpmd/phpmd": "^2.2",
-        "satooshi/php-coveralls": "^1.0",
+        "roave/security-advisories": "dev-master",
         "zf-commons/zfc-rbac": "^2.4",
         "zfcampus/zf-mvc-auth": "^1.3",
-        "zendframework/zend-authentication": "^2.5.3",
-        "zendframework/zend-cache": "^2.7.1"
+        "zendframework/zend-authentication": "^2.5.3"
     },
     "suggest": {
         "zf-commons/zfc-rbac": "For usage of ZfcRbac based authorization",
         "zfcampus/zf-mvc-auth": "For usage of ZfcRbac based REST guard",
         "zendframework/zend-http": "For usage of ZfcRbac based REST guard",
-        "3scale/3scale_ws_api_for_php": "For usage of the 3scale identity provider adapter",
-        "zendframework/zend-authentication": "For usage of the Zend Authentication identity provider adapter",
-        "zendframework/zend-cache": "For usage of the caching features within the 3scale identity provider adapter"
+        "zendframework/zend-authentication": "For usage of the Zend Authentication identity provider adapter"
     },
     "autoload": {
-        "psr-0": {
+        "psr-4": {
             "Detail\\Auth\\": "src/"
         }
     },
     "autoload-dev": {
-        "psr-0": {
+        "psr-4": {
             "DetailTest\\Auth\\": "tests/"
         }
     },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "1.x-dev"
-        }
-    },
-    "archive": {
-        "exclude": [
-            "!vendor",
-            "tests",
-            "*phpunit.xml",
-            ".travis.yml",
-            "build.xml",
-            "build.properties",
-            "composer.phar"
-        ]
+    "scripts": {
+        "check": [
+            "@cs-check",
+            "@md-check",
+            "@test"
+        ],
+        "cs-check": "phpcs --standard=phpcs.xml -v",
+        "cs-check-report": "phpcs --standard=phpcs.xml --report=checkstyle --report-file=build/checkstyle.xml",
+        "md-check": "phpmd src xml phpmd.xml",
+        "md-check-report": "phpmd src xml phpmd.xml --reportfile build/pmd.xml",
+        "test": "phpunit",
+        "test-coverage-html": "phpunit --coverage-html build/coverage",
+        "test-coverage-clover": "phpunit --coverage-clover build/clover.xml"
     }
 }
